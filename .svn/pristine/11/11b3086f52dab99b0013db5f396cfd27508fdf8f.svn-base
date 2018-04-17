@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="../../static/css/normalize.min.css">
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_580199_qdrw4brplclyp66r.css">
+  <link rel="stylesheet" href="../../static/css/all.css">
+  <script src="../../static/js/lib/require.min.js"></script>
+  <script data-path="../../" src="../../static/config.js"></script>
+</head>
+<body>
+  <div id="app" v-clock>
+    <layout-table>
+      <div slot="header-left-handler">
+        <el-button loading type="warning" icon="el-icon-circle-plus">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete">批量删除</el-button>
+        <el-button type="info" icon="el-icon-download">导出Excel</el-button>
+      </div>
+      <div slot="header-right-filters">
+        <el-input style="width: 220px;margin-bottom: 10px;" placeholder="请输入查询ID"></el-input>
+        <el-input style="width: 220px;" placeholder="请输入内容"></el-input>
+      </div>
+      <div slot="header-right-handler">
+        <el-button type="primary" icon="el-icon-search">查询</el-button>
+      </div>
+      <div slot="main-settings">
+        <el-checkbox-group v-model="columnList">
+          <el-checkbox label="id" disabled>ID</el-checkbox>
+          <el-checkbox label="number" disabled>编号</el-checkbox>
+          <el-checkbox label="name" disabled>英文名</el-checkbox>
+          <el-checkbox label="canme" disabled>中文名</el-checkbox>
+          <el-checkbox label="color" disabled>颜色</el-checkbox>
+          <el-checkbox label="title">英文标题</el-checkbox>
+          <el-checkbox label="ctitle">中文标题</el-checkbox>
+          <el-checkbox label="url">链接</el-checkbox>
+          <el-checkbox label="email">邮箱</el-checkbox>
+          <el-checkbox label="image">图片</el-checkbox>
+          <el-checkbox label="date">时间</el-checkbox>
+          <el-checkbox label="cadd">地址</el-checkbox>
+          <el-checkbox label="phone">手机号</el-checkbox>
+        </el-checkbox-group>
+      </div>
+      <el-table
+        ref="table"
+        slot="main"
+        border
+        :highlight-current-row="true"
+        :data="tableData3"
+        height="100%"
+        style="height: 100%;"
+        tooltip-effect="dark">
+        <el-table-column
+          show-overflow-tooltip
+          fixed
+          type="selection">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('id') > -1"
+          show-overflow-tooltip
+          fixed
+          prop="id"
+          label="ID">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('number') > -1"
+          show-overflow-tooltip
+          prop="number"
+          label="编号">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('name') > -1"
+          show-overflow-tooltip
+          width="180"
+          prop="name"
+          label="英文名">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('canme') > -1"
+          show-overflow-tooltip
+          prop="canme"
+          label="中文名">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('color') > -1"
+          show-overflow-tooltip
+          prop="color"
+          label="颜色">
+          <template slot-scope="scope">
+            <i :style="{color: scope.row.color}" class="el-icon-star-on"></i>
+          </template>
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('title') > -1"
+          show-overflow-tooltip
+          width="300"
+          prop="title"
+          label="英文标题">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('ctitle') > -1"
+          show-overflow-tooltip
+          width="200"
+          prop="ctitle"
+          label="中文标题">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('url') > -1"
+          show-overflow-tooltip
+          prop="url"
+          label="链接">
+          <template slot-scope="scope">
+            <el-tag size="mini">链接</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('email') > -1"
+          show-overflow-tooltip
+          width="300"
+          prop="email"
+          label="邮箱">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('image') > -1"
+          show-overflow-tooltip
+          prop="image"
+          label="图片">
+          <template slot-scope="scope">
+            <img :src="scope.row.image" width="20" alt="">
+          </template>
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('date') > -1"
+          show-overflow-tooltip
+          width="200"
+          prop="date"
+          label="时间">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('cadd') > -1"
+          show-overflow-tooltip
+          width="300"
+          prop="cadd"
+          label="地址">
+        </el-table-column>
+        <el-table-column
+          v-if="columnList.indexOf('phone') > -1"
+          show-overflow-tooltip
+          width="150"
+          prop="phone"
+          label="手机号">
+        </el-table-column>
+        <el-table-column
+          show-overflow-tooltip
+          width="220"
+          label="操作"
+          fixed="right">
+          <template slot-scope="scope">
+            <el-button type="primary" size="mini">编辑</el-button>
+            <el-button type="danger" size="mini">删除</el-button>
+            <el-button size="mini">预览</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div slot="footer">
+        <el-pagination
+          background
+          border
+          :page-sizes="[10, 20, 30, 40]"
+          :page-size="100"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="400">
+        </el-pagination>
+      </div>
+    </layout-table>
+  </div>
+
+  <script>
+    require(['vue', 'ELEMENT', 'components/layout-table'], function (Vue, ELEMENT, LayoutTable) {
+      Vue.use(ELEMENT)
+      new Vue({
+        el: '#app',
+        components: {
+          LayoutTable: LayoutTable
+        },
+        data: function () {
+          return {
+            columnList: ['id', 'number', 'name', 'canme', 'color', 'title', 'ctitle', 'url', 'email', 'image', 'date', 'cadd', 'phone'],
+            tableData3: []
+          }
+        },
+        created () {
+          console.log(1)
+        }
+      })
+    })
+  </script>
+</body>
+</html>

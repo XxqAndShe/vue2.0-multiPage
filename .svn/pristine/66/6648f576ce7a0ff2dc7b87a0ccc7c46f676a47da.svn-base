@@ -1,0 +1,559 @@
+<template>
+  <div id="app">
+    <!-- 顶部 -->
+    <div id="header">
+      <div class="name">XXX管理系统</div>
+      <div class="nav">
+        <screenfull fill="#fff"></screenfull>
+        <el-dropdown style="margin-left: 10px" :show-timeout="120">
+          <span class="el-dropdown-link">
+            <span class="avatar-box">
+              <img class="avatar" alt="">
+            </span>
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item disabled>用户中心</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;个人信息</el-dropdown-item>
+            <el-dropdown-item @click.native="doExitLogon()">&nbsp;&nbsp;&nbsp;退出登陆</el-dropdown-item>
+            <el-dropdown-item disabled divided>设置中心</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;个人设置</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;系统设置</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+    </div>
+    <!-- 侧栏 -->
+    <div id="aside" :class="{'collapse-menu': collapseMenu}">
+      <div class="collapse-menu" @click="collapseMenu = !collapseMenu">
+        <icon-svg style="fill: #fff;" :size="20" icon-class="ego-menu"></icon-svg>
+      </div>
+      <div class="menu">
+        <el-menu
+          class="el-menu-vertical-demo"
+          :default-active="framePath"
+          :collapse="collapseMenu"
+          background-color="#1c2f41"
+          text-color="rgba(255, 255, 255, 0.65)"
+          active-text-color="#409EFF"
+          style="width: 100%;box-sizing: border-box;border-right: none;">
+          <el-submenu index="1">
+            <template slot="title">
+              <icon-svg size="20" icon-class="dingdanguanli1"></icon-svg>
+              <span slot="title">订单管理</span>
+            </template>
+            <el-menu-item index="/order/proxy.html" @click.native="go('/order/proxy.html')">代理接单</el-menu-item>
+            <el-menu-item index="/order/query.html" @click.native="go('/order/query.html')">订单查询</el-menu-item>
+          </el-submenu>
+          <el-submenu index="2">
+            <template slot="title">
+              <icon-svg size="20" icon-class="iconfontshangjia"></icon-svg>
+              <span slot="title">商家管理</span>
+            </template>
+            <el-menu-item index="/business/authentication.html" @click.native="go('/business/authentication.html')">商家认证</el-menu-item>
+            <el-menu-item index="/business/data-review.html" @click.native="go('/business/data-review.html')">资料审核</el-menu-item>
+            <el-menu-item index="/business/preferential-review.html" @click.native="go('/business/preferential-review.html')">优惠审核</el-menu-item>
+            <el-menu-item index="/business/merchant-query.html" @click.native="go('/business/merchant-query.html')">商家查询</el-menu-item>
+            <el-menu-item index="/business/preferential-review.html" @click.native="go('/business/data-trusteeship.html')">商家资料托管</el-menu-item>
+          </el-submenu>
+          <el-submenu index="3">
+            <template slot="title">
+              <icon-svg size="20" icon-class="dianpu"></icon-svg>
+              <span slot="title">自营店</span>
+            </template>
+            <el-menu-item index="/self-shop/order.html" @click.native="go('/self-shop/order.html')">订单</el-menu-item>
+            <el-menu-item index="/self-shop/business-setting.html" @click.native="go('/self-shop/business-setting.html')">业务设置</el-menu-item>
+            <el-menu-item index="/self-shop/preferential-setting.html" @click.native="go('/self-shop/preferential-setting.html')">优惠设置</el-menu-item>
+            <el-menu-item index="/self-shop/obd-management.html" @click.native="go('/self-shop/obd-management.html')">OBD设备管理</el-menu-item>
+          </el-submenu>
+          <el-submenu index="4">
+            <template slot="title">
+              <icon-svg size="20" icon-class="pingtaiyingyong"></icon-svg>
+              <span slot="title">平台运营</span>
+            </template>
+            <el-menu-item index="/operate/activity-settings.html" @click.native="go('/operate/activity-settings.html')">平台活动设置</el-menu-item>
+            <el-menu-item index="/operate/revenue-management.html" @click.native="go('/operate/revenue-management.html')">平台营收管理</el-menu-item>
+            <el-menu-item index="/operate/business-setting.html" @click.native="go('/operate/business-setting.html')">平台业务设置</el-menu-item>
+            <el-menu-item index="/operate/agreement-management.html" @click.native="go('/operate/agreement-management.html')">结算协议管理</el-menu-item>
+            <el-menu-item index="/operate/short-message.html" @click.native="go('/operate/short-message.html')">短信平台记账</el-menu-item>
+            <el-menu-item index="/operate/violation-accounts.html" @click.native="go('/operate/violation-accounts.html')">聚合违章记账</el-menu-item>
+            <el-menu-item index="/operate/customer-service.html" @click.native="go('/operate/customer-service.html')">客服管理</el-menu-item>
+            <el-menu-item index="/operate/coupons-management.html" @click.native="go('/operate/coupons-management.html')">机构优惠券管理</el-menu-item>
+            <el-menu-item index="/operate/settlement.html" @click.native="go('/operate/settlement.html')">发票结算</el-menu-item>
+          </el-submenu>
+          <el-submenu index="5">
+            <template slot="title">
+              <icon-svg size="20" icon-class="xitongguanli1"></icon-svg>
+              <span slot="title">系统管理</span>
+            </template>
+            <el-menu-item index="/system/data-dictionary.html" @click.native="go('/system/data-dictionary.html')">数据字典维护</el-menu-item>
+            <el-menu-item index="/system/authority-management.html" @click.native="go('/system/authority-management.html')">权限管理</el-menu-item>
+            <el-menu-item index="/system/role-management.html" @click.native="go('/system/role-management.html')">角色管理</el-menu-item>
+            <el-menu-item index="/system/employee-management.html" @click.native="go('/system/employee-management.html')">员工管理</el-menu-item>
+            <el-menu-item index="/system/menu-management.html" @click.native="go('/system/menu-management.html')">菜单管理</el-menu-item>
+            <el-menu-item index="/system/system-exception.html" @click.native="go('/system/system-exception.html')">系统异常管理</el-menu-item>
+            <el-menu-item index="/system/system-message.html" @click.native="go('/system/system-message.html')">系统消息查看</el-menu-item>
+            <el-menu-item index="/system/process-definition.html" @click.native="go('/system/process-definition.html')">流程定义</el-menu-item>
+          </el-submenu>
+          <el-submenu index="6">
+            <template slot="title">
+              <icon-svg size="20" icon-class="weibiaoti2"></icon-svg>
+              <span slot="title">客户管理</span>
+            </template>
+            <el-menu-item index="/customer/customer-query.html" @click.native="go('/customer/customer-query.html')">客户查询</el-menu-item>
+            <el-menu-item index="/customer/vehicle-query.html" @click.native="go('/customer/vehicle-query.html')">车辆查询</el-menu-item>
+          </el-submenu>
+          <el-submenu index="7">
+            <template slot="title">
+              <icon-svg size="20" icon-class="hujiaozhuanyitianchong"></icon-svg>
+              <span slot="title">呼叫中心</span>
+            </template>
+            <el-menu-item index="/call-center/phone.html" @click.native="go('/call-center/phone.html')">电话值守</el-menu-item>
+          </el-submenu>
+          <el-submenu index="8">
+            <template slot="title">
+              <icon-svg size="20" icon-class="msnui-org-inverse"></icon-svg>
+              <span slot="title">机构管理</span>
+            </template>
+            <el-menu-item index="/organizational/coupon-definition.html" @click.native="go('/organizational/coupon-definition.html')">优惠券定义</el-menu-item>
+            <el-menu-item index="/organizational/coupon-consumption.html" @click.native="go('/organizational/coupon-consumption.html')">优惠券消费</el-menu-item>
+            <el-menu-item index="/organizational/platform-recharge.html" @click.native="go('/organizational/platform-recharge.html')">平台充值</el-menu-item>
+            <el-menu-item index="/organizational/organizational-management.html" @click.native="go('/organizational/organizational-management.html')">机构管理</el-menu-item>
+          </el-submenu>
+        </el-menu>
+      </div>
+    </div>
+    <!-- 内容 -->
+    <div id="main" v-loading="mainLoading" :class="{'collapse-menu': collapseMenu}">
+      <iframe :src="framePath" ref="iframe" frameborder="0" id='framePath'></iframe>
+    </div>
+    <el-dialog
+      title="新订单"
+      :visible.sync="orderAcceptDialogVisible"
+      :close-on-press-escape="!orderAcceptDialogVisible"
+      :close-on-click-modal="!orderAcceptDialogVisible"
+      :show-close="!orderAcceptDialogVisible"
+      width="500px">
+      <div class="order-dialog">
+        <!-- 车 -->
+        <div v-if="orderData.vehicle" class="nameplate">
+          <div>
+            <img :src="baseUrl + orderData.vehicle['ico']" alt="车标">
+          </div>
+          <div>
+            <div>{{orderData.vehicle.seriesName}}</div>
+            <div>{{orderData.vehicle.licenseplate}}</div>
+          </div>
+        </div>
+        <!-- 订单表单 -->
+        <div class="list">
+          <div>
+            <label>业务：</label>
+            <el-tag size="mini">{{orderData.pname}}</el-tag>&nbsp;&nbsp;&nbsp;
+            <el-tag size="mini" type="info">{{orderData.name}}</el-tag>
+          </div>
+          <template v-for="(item, index) in orderForms">
+            <div :key="index">
+              <label>{{item.label}}：</label>
+              <div ref="orderImages" class="order-imageBox" v-if="item.dataType === 'images'">
+                <div v-for="(img, idx) in detailImg" :key="idx">
+                  <img :src="baseUrl + img" alt="">
+                </div>
+              </div>
+              <span v-else>{{item.value}}</span>
+            </div>
+          </template>
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRefuse">拒 单</el-button>
+        <el-button type="primary" @click="setAccept">接 单</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import Viewer from 'viewerjs'
+import initSocket from '../../socket'
+import notice from '../../utils/notice'
+import { refresh, orderAccept, orderDenied } from '../../api/order'
+
+export default {
+  data () {
+    return {
+      mainLoading: true,
+      baseUrl: process.env.BASE_URL,
+      collapseMenu: false,
+      framePath: '/order/proxy.html',
+      dialogTableVisible: false,
+      dialogType: '', // 弹窗类型
+      gridData: [], // 弹窗数据
+      columns: [], // 表格header
+      orderData: [], // 接单相关信息
+      orderForms: [], // 订单的用户输入
+      detailImg: [], // 描述图片
+      orderAcceptDialogVisible: false, // 弹窗显示隐藏
+      dialogMsg: '您有一笔新订单'
+    }
+  },
+  created () {
+    notice.init()
+    var path = decodeURIComponent(location.hash.substring(1))
+    this.framePath = path || '/order/proxy.html'
+  },
+  mounted () {
+    console.log(Viewer)
+    // 监听iframe窗口的消息
+    this.$nextTick(function () {
+      this.$refs.iframe.addEventListener('load', () => {
+        this.mainLoading = false
+        location.hash = encodeURIComponent(this.framePath)
+      })
+      // this.$layer.url({ content: '/organizational/coupon-definition.html' })
+      // RibitMQ
+      const acount = {
+        acount: 'admin',
+        password: 'admin123',
+        id: 18
+      }
+      initSocket(acount, this.connect, this.error)
+    })
+    // 刷新token
+    this.checkUserLogin()
+    this.doRefresh()
+    // 是否有接单dialog弹窗
+    this.isDialog()
+  },
+  methods: {
+    go: function (path) {
+      if (path === this.framePath) return false
+      this.mainLoading = true
+      this.framePath = path
+      location.hash = encodeURIComponent(path)
+    },
+    connect (data) {
+      data = JSON.parse(data)
+      console.log(data)
+      switch (data.biz) {
+        case 'Shop':
+          this.$notify({
+            title: data.title,
+            message: '',
+            type: 'success',
+            duration: 0
+          })
+          break
+        case 'Discount':
+          this.$notify({
+            title: data.title,
+            message: '',
+            type: 'success',
+            duration: 0
+          })
+          break
+        case 'Order':
+          let arr = []
+          // 判断是否存在localOrder
+          let orderData = localStorage.getItem('localOrder')
+          if (orderData && orderData.length > 1) {
+            arr = JSON.parse(orderData)
+          }
+          // 存储data
+          arr.push(data)
+          arr = JSON.stringify(arr)
+          localStorage.setItem('localOrder', arr)
+          this.isDialog()
+          break
+      }
+    },
+    // 弹出dialog
+    setLog (param) {
+      let data = JSON.parse(param)
+      this.orderData = JSON.parse(data[0].content)
+      this.detailImg = [] // 清零防止累加
+      this.orderForms = this.orderData.dynamicForms
+      this.orderForms.forEach(item => {
+        if (item.dataType === 'images' && item.value) {
+          this.detailImg = item.value.split(',')
+        }
+      })
+      this.orderAcceptDialogVisible = true
+      /* eslint-disable */
+      this.$nextTick(function () {
+        console.log(this.$refs.orderImages[0])
+        new Viewer(this.$refs.orderImages[0])
+      })
+      /* eslint-enable */
+    },
+    // 是否出现dialog弹窗
+    isDialog () {
+      let data = localStorage.getItem('localOrder')
+      if (data && JSON.parse(data).length > 0) { // 存在订单没有处理
+        this.setLog(data)
+      }
+    },
+    // 接单
+    setAccept () {
+      let arrData = JSON.parse(localStorage.getItem('localOrder'))
+      let code = arrData[0].bizValue
+      console.log(code)
+      orderAccept(code).then(data => {
+        console.log(data)
+        if (data.success) {
+          this.$message.success('操作成功')
+          this.orderAcceptDialogVisible = false
+          // 处理localStorage
+          arrData.shift()
+          localStorage.setItem('localOrder', JSON.stringify(arrData))
+          this.isDialog()
+        } else {
+          this.$message.error(data.message)
+        }
+      })
+    },
+    // 拒单
+    setRefuse () {
+      let arrData = JSON.parse(localStorage.getItem('localOrder'))
+      let code = arrData[0].bizValue
+      orderDenied(code).then(data => {
+        console.log(data)
+        if (data.success) {
+          this.$message.success('操作成功')
+          this.orderAcceptDialogVisible = false
+          // 处理localStorage
+          arrData.shift()
+          localStorage.setItem('localOrder', JSON.stringify(arrData))
+          this.isDialog()
+        } else {
+          this.$message.error(data.message)
+        }
+      })
+    },
+    error () {
+      console.log('error')
+    },
+    // 刷新token
+    checkUserLogin () {
+      refresh().then(data => {
+        if (data.success) { // 通过
+          localStorage.setItem('token', data.data)
+        } else { // 不通过
+          this.$message.error('服务器异常，请联系管理员')
+          setTimeout(() => {
+            window.location.href = window.origin + '/login.html'
+          }, 1000)
+        }
+      })
+    },
+    // 2分钟刷新一次token
+    doRefresh () {
+      setTimeout(() => {
+        this.checkUserLogin()
+        this.doRefresh()
+      }, 1000 * 120)
+    },
+    // 退出登录
+    doExitLogon: function () {
+      localStorage.removeItem('token')
+      localStorage.removeItem('metaSeed')
+      window.location.href = window.origin + '/login.html'
+    }
+  }
+}
+</script>
+
+<style lang="less">
+@import "../../styles/variable.less";
+
+html,
+body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: @font-color;
+  overflow-y: hidden;
+}
+
+#aside .menu::-webkit-scrollbar {
+  width: 6px;
+  height: 5px;
+  background-color: #f5f5f5;
+}
+/*定义滚动条的轨道，内阴影及圆角*/
+#aside .menu::-webkit-scrollbar-track {
+  background-color: #1c2f41;
+}
+/*定义滑块，内阴影及圆角,宽高分别对应横竖滑块的尺寸*/
+
+#aside .menu::-webkit-scrollbar-thumb {
+  width: 5px;
+  height: 5px;
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+  background-color: #a8a8a8;
+}
+
+#app-index {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: @min-width;
+  overflow: hidden;
+}
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#header {
+  box-sizing: border-box;
+  position: absolute;
+  display: flex;
+  left: 0;
+  right: 0;
+  height: @header-height;
+  align-items: stretch;
+  justify-content: space-between;
+  line-height: @header-height;
+  background: linear-gradient(
+    to right,
+    @header-color-from 0,
+    @header-color-to 100%
+  );
+  .name {
+    flex: 0 0 @aside-width;
+    text-align: center;
+    font-size: 24px;
+    color: #fff;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    line-height: @header-height;
+    color: #fff;
+  }
+  .avatar-box {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .avatar {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    user-select: none;
+  }
+  .el-icon-arrow-down {
+    display: none;
+  }
+}
+
+#aside {
+  box-sizing: border-box;
+  position: absolute;
+  top: @header-height;
+  bottom: 0;
+  width: @aside-width;
+  overflow: hidden;
+  background-color: @aside-color;
+  transition: width 0.3s;
+  .menu {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    overflow: hidden;
+    overflow-y: scroll;
+  }
+  .svg-icon {
+    margin-right: 4px;
+    fill: rgba(255, 255, 255, 0.65);
+  }
+  &.collapse-menu {
+    width: @aside-collapse-width;
+  }
+  .collapse-menu {
+    height: 30px;
+    text-align: center;
+    background-color: fade(#fff, 20%);
+    .svg-icon {
+      margin-top: 6px;
+    }
+  }
+}
+
+#main {
+  position: absolute;
+  top: @header-height;
+  left: @aside-width;
+  right: 0;
+  bottom: 0;
+  transition: left 0.3s;
+  overflow: hidden;
+  &.collapse-menu {
+    left: @aside-collapse-width;
+  }
+  iframe {
+    height: 100%;
+    width: 100%;
+    border: none;
+  }
+}
+.order-dialog {
+  width: 100%;
+  .nameplate{
+    display: flex;
+    margin-bottom: 10px;
+    border: 1px solid #2222;
+    > div {
+      flex: 1;
+    }
+    > div:first-child {
+      flex: 0 0 5em;
+      height: 50px;
+      margin-right: 6px;
+      > img {
+        display: block;
+        width: 50px;
+        height: 50px;
+        margin: 0 auto;
+      }
+    }
+  }
+  .list {
+    > div {
+      display: flex;
+      label {
+        flex: 0 0 5em;
+        margin-right: 5px;
+        text-align: right;
+      }
+    }
+    .order-imageBox {
+      display: flex;
+      width: 100%;
+      > div {
+        position: relative;
+        flex: 0 0 110px;
+        height: 110px;
+        margin-right: 3px;
+        overflow: hidden;
+      }
+      img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        max-width: 100%;
+        max-height: 100%;
+        transform: translate3d(-50%, -50%, 0)
+      }
+    }
+  }
+}
+</style>

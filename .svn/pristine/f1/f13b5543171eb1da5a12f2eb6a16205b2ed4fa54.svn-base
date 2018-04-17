@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="format-detection" content="telephone=no,email=no">
+  <title>Vue2.0 + ElementUI + Multipages + Webpack2</title>
+  <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.4&key=//webapi.amap.com/maps?v=1.4.2&key=0bf1ac31275c32a2135df00cdcdf95dc"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>

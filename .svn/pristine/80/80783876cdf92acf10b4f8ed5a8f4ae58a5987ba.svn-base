@@ -1,0 +1,375 @@
+<template>
+  <div id="app">
+    <layout-table>
+      <div slot="header-left-handler">
+        <el-button :loading="orderCompleteding" v-if="selects.length === 1" :disabled="selects.length !== 1" @click="doOrderCompleted(selects[0])" type="success" icon="el-icon-check" size='small'>完成</el-button>        
+        <el-button :loading="orderCompleteding" v-if="selects.length !== 1"  :disabled="selects.length < 2" @click="doBatchOrderCompleted" type="success" icon="el-icon-check" size='small'>批量完成</el-button>
+      </div>
+      <div slot="header-right-filters">
+        <el-date-picker
+          style="width: 230px;margin-bottom: 10px;"
+          v-model="filterTime"
+          type="daterange"
+          align="left"
+          size="small"
+          :editable="false"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          :picker-options="pickerOptions">
+        </el-date-picker>
+        <el-select value="" style="width: 230px;margin-bottom: 10px;" placeholder="选择订单状态" size='small'>
+          <el-option label="待接单" value="待接单"></el-option>
+          <el-option label="待完成" value="待完成"></el-option>
+        </el-select>
+        <el-input style="width: 230px;" placeholder="操作人" size='small'></el-input>
+      </div>
+      <div slot="header-right-handler">
+        <el-button type="primary" icon="el-icon-search" size='small'>查询</el-button>
+      </div>
+
+      <!-- <div slot="main-settings">
+        表格列设置区
+      </div> -->
+    <!-- 订单号，业务名称，下单时间， 支付方式， 支付金额， 门店， 订单状态 -->
+      <el-table
+        slot="main"
+        ref="table"
+        @selection-change="selectionChange"
+        @row-dblclick="rowDbClick"
+        :loading="loading"
+        :data="orderList"
+        :highlight-current-row="true"
+        size="small"
+        border
+        tooltip-effect="dark"
+        height="100%"
+        :header-cell-style="{'background-color': '#f5f7fa'}"
+        style="width: 100%;height: 100%;">
+        <el-table-column
+          fixed
+          type="selection">
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          width="230"
+          prop="code"
+          label="订单号">
+          <!-- <template slot-scope="scope">{{ scope.row.date }}</template> -->
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          prop="biz.name"
+          label="业务名称">
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          prop="orderTime"
+          label="下单时间">
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          label="支付方式">
+          <template slot-scope="scope">{{ scope.row.payType === 'Before' ? '预付' : '后付' }}</template>
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          prop="realPay"
+          label="支付金额">
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          prop="shopName"
+          label="门店">
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          prop="status"
+          label="订单状态">
+          <template slot-scope="scope">
+            <el-tag v-if="orderAcceptStatus.indexOf(scope.row.status) > -1" size="mini" type="warning">待接单</el-tag>
+            <el-tag v-else-if="orderCompletedStatus.indexOf(scope.row.status) > -1" size="mini" type="success">待完成</el-tag>
+            <span v-else></span>  
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          show-overflow-tooltip
+          width="140"
+          label="操作"
+          fixed="right">
+          <template slot-scope="scope">
+            <template v-if="orderCompletedStatus.indexOf(scope.row.status) > -1">
+              <el-button @click.native="doOrderCompleted(scope.row)" type="text" size="mini">完成</el-button>
+            </template>
+            <el-button type="text" size="mini">详情</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div slot="footer">
+        <el-pagination
+          background
+          border
+          :page-sizes="[10, 20, 30, 40]"
+          :page-size="listQuery.len"
+          :total="total"
+          :current-page="listQuery.p + 1"
+          @size-change="sizeChange"
+          @current-change="onCurrentPage"
+          layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
+      </div>
+    </layout-table>
+  </div>
+</template>
+
+<script>
+import { getListDate, orderCompleted } from "api/order.js";
+
+// 接单状态 CustPosted
+const orderAcceptStatus = ["CustPosted"];
+// 完成服务状态 ShopAccepted
+const orderCompletedStatus = ["ShopAccepted"];
+
+export default {
+  data() {
+    return {
+      ajaxCount: 0,
+      errorCount: 0,
+      loading: false,
+      orderAccepting: false, // 接单请求中
+      orderCompleteding: false, // 完成订单请求中
+      orderDenieding: false, // 拒绝接单请求中
+      orderAcceptStatus,
+      orderCompletedStatus,
+      orderList: [],
+      selects: [],
+      listQuery: {
+        p: 0,
+        len: 20,
+        sort: "-orderTime"
+      },
+      total: 0,
+      filterTime: "",
+      pickerOptions: {
+        shortcuts: [
+          {
+            text: "最近一周",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit("pick", [start, end]);
+            }
+          },
+          {
+            text: "最近一个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit("pick", [start, end]);
+            }
+          },
+          {
+            text: "最近三个月",
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit("pick", [start, end]);
+            }
+          }
+        ]
+      }
+    };
+  },
+  created() {
+    this.getOrderList();
+  },
+  mounted() {
+    window.addEventListener(
+      "message",
+      e => {
+        console.log(this);
+        const domain = window.location.origin;
+        const sourceDomain = e.origin || e.originalEvent.origin;
+        if (domain === sourceDomain) {
+          if (e.data && e.data.type === "Order") {
+            this.getOrderList();
+          }
+        }
+      },
+      false
+    );
+  },
+  methods: {
+    getOrderList() {
+      this.loading = true;
+      getListDate(this.listQuery, "/admin/order/list?")
+        .then(data => {
+          if (data.success) {
+            this.orderList = data.data.content;
+            this.total = data.data.totalElements;
+          } else {
+            this.$message.error(data.message);
+          }
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+        });
+    },
+    // 完成订单
+    orderCompleted(row, num) {
+      const finished = () => {
+        if (this.ajaxCount === num) {
+          if (this.errorCount === 0) {
+            this.$message.success("操作成功");
+          } else {
+            this.$message.error(
+              "操作完成，其中" + this.errorCount + "笔订单处理失败"
+            );
+          }
+          this.orderCompleteding = false;
+          this.loading = false;
+          this.ajaxCount = 0;
+          this.errorCount = 0;
+          this.getOrderList();
+        }
+      };
+      orderCompleted(row.code)
+        .then(data => {
+          if (!data.success) {
+            this.errorCount++;
+          }
+          this.ajaxCount++;
+          finished();
+        })
+        .catch(() => {
+          this.ajaxCount++;
+          this.errorCount++;
+          finished();
+        });
+    },
+    // 完成订单
+    doOrderCompleted(row) {
+      this.$confirm("是否确认完成此订单?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        this.orderCompleteding = true;
+        this.loading = true;
+        this.orderCompleted(row, 1);
+        }).catch(() => {
+
+        });
+    },
+    // 批量完成订单
+    doBatchOrderCompleted() {
+      const len = this.selects.length;
+      if (len === 0) {
+        return false;
+      }
+      this.orderCompleteding = true;
+      this.loading = true;
+      this.selects.forEach(row => {
+        this.orderCompleted(row, len);
+      });
+    },
+    // 拒单
+    orderDenied(row, num) {
+      const finished = () => {
+        if (this.ajaxCount === num) {
+          if (this.errorCount === 0) {
+            this.$message.success("操作成功");
+          } else {
+            this.$message.error(
+              "操作完成，其中" + this.errorCount + "笔订单处理失败"
+            );
+          }
+          this.orderDenieding = false;
+          this.loading = false;
+          this.ajaxCount = 0;
+          this.errorCount = 0;
+          this.getOrderList();
+        }
+      };
+      orderDenied(row.code)
+        .then(data => {
+          if (!data.success) {
+            this.errorCount++;
+          }
+          this.ajaxCount++;
+          finished();
+        })
+        .catch(() => {
+          this.ajaxCount++;
+          this.errorCount++;
+          finished();
+        });
+    },
+    // 拒单
+    doOrderDenied(row) {
+      this.orderDenieding = true;
+      this.loading = true;
+      this.orderDenied(row, 1);
+    },
+    // 批量拒单
+    doBatchOrderDenied() {
+      const len = this.selects.length;
+      if (len === 0) {
+        return false;
+      }
+      this.orderDenieding = true;
+      this.loading = true;
+      this.selects.forEach(row => {
+        this.orderDenied(row, len);
+      });
+    },
+    // 选项改变
+    selectionChange(selects) {
+      this.selects = selects;
+    },
+    // 单击某一行选中
+    rowDbClick(row) {
+      this.$refs.table.toggleRowSelection(
+        row,
+        this.selects.indexOf(row) === -1
+      );
+    },
+    sizeChange: function(size) {
+      this.listQuery.len = size;
+    },
+    onCurrentPage: function(page) {
+      this.listQuery.p = page - 1;
+    }
+  },
+  watch: {
+    listQuery: {
+      handler: function(newVl) {
+        this.getOrderList();
+      },
+      deep: true
+    }
+  }
+};
+</script>
+
+<style lang="less">
+html,
+body {
+  height: 100%;
+}
+#app {
+  height: 100%;
+}
+</style>

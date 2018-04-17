@@ -1,0 +1,75 @@
+define(['vue'], function (Vue) {
+  return Vue.extend({
+    name: 'layout-table',
+    template: '<div class="layout-table">\
+      <div class="layout-header">\
+        <div class="layout-header-left" :class="{enter: headerVisible}" @mouseenter="headerMouseenter" @mouseleave="headerMouseleave">\
+          <div class="header-left-hover-box">\
+            <slot name="header-left-handler">left</slot>\
+          </div>\
+          <div class="filters-more">\
+            <i style="color: #606266" class="el-icon-d-arrow-right"></i>\
+          </div>\
+        </div>\
+        <div class="layout-header-right" :class="{enter: filtersVisible}" @mouseenter="filterMouseenter" @mouseleave="filterMouseleave">\
+          <div class="layout-header-right-filters">\
+            <div class="filters-hover-box">\
+              <slot name="header-right-filters">filters</slot>\
+            </div>\
+            <div class="filters-more">\
+              <i style="color: #606266" class="el-icon-d-arrow-right"></i>\
+            </div>\
+          </div>\
+          <div class="layout-header-right-handler">\
+            <slot name="header-right-handler">handler</slot>\
+          </div>\
+        </div>\
+      </div>\
+      <div class="layout-main">\
+        <div v-show="showSettings" class="main-settings">\
+          <slot name="main-settings"></slot>\
+        </div>\
+        <div class="main-container">\
+          <slot name="main">main</slot>\
+        </div>\
+      </div>\
+      <div class="layout-footer">\
+        <slot name="footer">footer</slot>\
+      </div>\
+    </div>',
+    data: function () {
+      return {
+        headerVisible: false,
+        headerLeaveTimer: null,
+        filtersVisible: false,
+        filtersLeaveTimer: null,
+        showSettings: false
+      }
+    },
+    mounted: function () {
+      this.showSettings = !!this.$slots["main-settings"]
+    },
+    methods: {
+      headerMouseenter: function () {
+        clearInterval(this.headerLeaveTimer)
+        this.headerVisible = true
+      },
+      headerMouseleave: function () {
+        var _this = this
+        this.headerLeaveTimer = setTimeout(function () {
+          _this.headerVisible = false
+        }, 400)
+      },
+      filterMouseenter: function () {
+        clearInterval(this.filtersLeaveTimer)
+        this.filtersVisible = true
+      },
+      filterMouseleave: function () {
+        var _this = this
+        this.filtersLeaveTimer = setTimeout(function () {
+          _this.filtersVisible = false
+        }, 400)
+      }
+    }
+  })
+})

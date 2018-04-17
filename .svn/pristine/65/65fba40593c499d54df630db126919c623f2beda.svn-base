@@ -1,0 +1,243 @@
+<template>
+    <div id="app">
+      <layout-table>
+        <div ref="testdiv" slot="header-left-handler">
+          <el-button :loading="orderAccepting" :disabled="selects.length === 0" @click="doBatchSettlement" type="primary" icon="el-icon-tickets"
+            size='small'>{{msgButton}}</el-button>
+        </div>
+        <div slot="header-right-filters">
+          <el-input style="width: 220px;margin-bottom: 10px;" v-model="listQuery.sid" placeholder="商家ID" size='small' @keyup.enter.native="doSerach"></el-input>
+          <el-input style="width: 220px;margin-bottom: 10px;" v-model="listQuery.certNo" placeholder="凭证号" size='small' @keyup.enter.native="doSerach"></el-input>
+        </div>
+        <div slot="header-right-handler">
+          <el-button type="primary" icon="el-icon-search" size='small' @click="doSerach">查询</el-button>
+        </div>
+        <!-- <div slot="main-settings">
+          <b>&nbsp;&nbsp;商家名称：宝祥3S店</b>
+        </div> -->
+        <!-- 表格table -->
+        <el-table slot="main" ref="table" :loading="loading" :data="settlementData" :highlight-current-row="true" size="small" border
+          @select="setSelect" @select-all="setSelectAll" stripe tooltip-effect="dark" height="100%" :header-cell-style="{'background-color': '#f5f7fa'}"
+          style="width: 100%;height: 100%;">
+          <el-table-column fixed type="selection">
+          </el-table-column>
+          <el-table-column show-overflow-tooltip prop="shopName" label="商家名称">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="sid" label="商家ID">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="code" label="订单号">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="certNo" label="凭证号">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="countAmount" label="优惠券总额">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="completeSettlement" label="已结">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="unSettlement" label="未结">
+          </el-table-column>
+
+          <el-table-column show-overflow-tooltip prop="cleanStatus" label="结算状态">
+          </el-table-column>
+
+          <el-table-column
+            show-overflow-tooltip
+            width="140"
+            label="操作"
+            fixed="right">
+            <template slot-scope="scope">
+              <template>
+                <el-button @click.native="doSettlement(scope.row)" type="text" size="mini">结算</el-button>
+              </template>
+            </template>
+          </el-table-column>          
+        </el-table>
+        <div slot="footer">
+          <el-pagination background border :page-sizes="[10, 20, 30, 40]" :page-size="listQuery.len" :total="total" :current-page="listQuery.p + 1"
+            @size-change="sizeChange" @current-change="onCurrentPage" layout="total, sizes, prev, pager, next, jumper">
+          </el-pagination>
+      <!--dialog确认结算表格-->
+        <dialog-table 
+          v-if="dialogTableVisible"
+          @confirm="requestSettlement"
+          @cancel="cancelSettlement" 
+          :columns='columns' 
+          :data='dialogData' 
+          dialogTableVisible="true">
+        </dialog-table>
+        </div>
+      </layout-table>
+  </div>
+</template>
+
+<script>
+import notice from '../../../utils/notice'
+import { getListDate, accounts } from 'api/order.js'
+
+export default {
+  data () {
+    return {
+      filterTime: '',
+      orderAccepting: false,
+      loading: false,
+      msgButton: '批量结算',
+      dialogData: [],
+      dialogTableVisible: false, // dialog表格
+      orderList: [],
+      selects: [],
+      multiSelect: false,
+      settlementData: [],
+      columns: [
+        {
+          prop: 'shopName',
+          label: '商家名称'
+        },
+        {
+          prop: 'sid',
+          label: '商家ID'
+        },
+        {
+          prop: 'code',
+          label: '订单号'
+        },
+        {
+          prop: 'certNo',
+          label: '凭证号'
+        },
+        {
+          prop: 'countAmount',
+          label: '优惠券总额'
+        },
+        {
+          prop: 'completeSettlement',
+          label: '已结'
+        },
+        {
+          prop: 'unSettlement',
+          label: '未结'
+        },
+        {
+          prop: 'cleanStatus',
+          label: '结算状态'
+        }
+      ],
+
+      listQuery: {
+        p: 0,
+        len: 20,
+        sort: '-orderTime',
+        sid: '', // 商家id
+        certNo: '' // 凭证号
+      },
+      // 总页数
+      total: 0
+    }
+  },
+  created () {
+    notice.init()
+    this.getData()
+  },
+  mounted () {
+  },
+  methods: {
+    // 日期组件日期选择
+    timeChange () { },
+    // 批量结算
+    doBatchSettlement () {
+      this.dialogData = []
+      this.dialogTableVisible = true
+      this.dialogData = this.selects
+    },
+    // 单个结算
+    doSettlement (row) {
+      this.dialogData = []
+      this.dialogTableVisible = true
+      this.dialogData.push(row)
+
+    },
+    
+    // 取消结算
+    cancelSettlement () {
+      this.dialogTableVisible = false
+    },
+    // 结算接口调用
+    requestSettlement () {
+      // 逗号连接
+      var str = ''
+      this.dialogData.forEach(function (item) {
+        str = item.certNo + ','
+      })
+      // 去除最后一个逗号
+      str = str.substring(0, str.length - 1)
+      // 调用接口
+      accounts(str).then(data => {
+        if (data.success) {
+          this.$message.success('操作成功')
+          this.dialogTableVisible = false // 关闭dialog
+        } else {
+          notice.$message.error(data.message)
+        }
+        // 选中清零、刷新等
+        this.selects = []
+        this.getData()
+        this.msgButton = '结算'
+        this.loading = false
+      })
+    },
+    // 搜索
+    doSerach: function () {
+      this.getData()
+      this.selects = [] // 选中清零
+    },
+    // 每页条数
+    sizeChange: function (size) {
+      this.listQuery.len = size
+    },
+    // 选择单行
+    setSelect (event) {
+      this.selects = event
+      this.msgButton = this.selects.length === 1 ? '结算' : '批量结算'
+    },
+    // 选择全部
+    setSelectAll (event) {
+      this.selects = event
+      this.msgButton = this.selects.length === 1 ? '结算' : '批量结算'
+    },
+    // 当前页
+    onCurrentPage: function (page) {
+      this.listQuery.p = page - 1
+    },
+    // 获取列表数据
+    getData () {
+      this.loading = true
+      getListDate(this.listQuery, '/admin/settlement/coupon/list?')
+        .then(data => {
+          if (data.success) {
+            this.settlementData = data.data.content
+            this.total = data.data.totalElements
+          } else {
+            this.$message.error(data.message)
+          }
+        }).catch(() => {
+          this.loading = false
+        })
+    },
+    getSummaries (parms) {
+      notice.getSummaries(parms, [1])
+    }
+  }
+}
+</script>
+
+<style lang="less">
+html,
+body,
+#app {
+  height: 100%;
+}
+</style>

@@ -1,0 +1,383 @@
+import {
+  extend
+} from './index'
+import ELEMENT from 'element-ui'
+
+const isType = Object.prototype.toString
+
+const notice = {
+  topDomain: window.top.location.origin,
+  domain: window.location.origin,
+  noticeListens: {
+    'element-message': false,
+    'element-notification': false,
+    'element-MessageBox-alert': false,
+    'element-MessageBox-confirm': false,
+    'element-MessageBox-prompt': false
+  },
+  noticeTypes: ['success', 'warning', 'info', 'error'],
+  init () {
+    notice.register$messageMethods()
+    notice.register$notifyMethods()
+    notice.register$alertMethods()
+    notice.register$confirmMethods()
+  },
+  onPostMessageOfNotice (config) {
+    var _this = notice
+    if (window.self !== window.top) {
+      return false
+    }
+    extend(notice.noticeListens, config)
+
+    window.addEventListener('message', function (e) {
+      var sourceDomain = e.origin || e.originalEvent.origin
+      if (_this.domain === sourceDomain) {
+        if (e.data.type === 'element-message' && _this.noticeListens['element-message']) {
+          _this.$message(e.data.options)
+        }
+        if (e.data.type === 'element-notification' && _this.noticeListens['element-notification']) {
+          _this.$notify(e.data.options)
+        }
+        if (e.data.type === 'element-MessageBox-alert' && _this.noticeListens['element-MessageBox-alert']) {
+          _this.$alert(e.data.message, e.data.title, e.data.options).then(function (action) {
+            var response = {
+              type: 'element-MessageBox-alert',
+              data: action
+            }
+            e.source.postMessage(response, _this.domain)
+          })
+        }
+        if (e.data.type === 'element-MessageBox-confirm' && _this.noticeListens['element-MessageBox-confirm']) {
+          _this.$confirm(e.data.message, e.data.title, e.data.options).then(function () {
+            var response = {
+              type: 'element-MessageBox-confirm',
+              data: 'confirm'
+            }
+            e.source.postMessage(response, _this.domain)
+          }).catch(function () {
+            var response = {
+              type: 'element-MessageBox-confirm',
+              data: 'cancel'
+            }
+            e.source.postMessage(response, _this.domain)
+          })
+        }
+        if (e.data.type === 'element-MessageBox-prompt' && _this.noticeListens['element-MessageBox-prompt']) {
+          _this.$prompt(e.data.message, e.data.title, e.data.options).then(function (data) {
+            var response = {
+              type: 'element-MessageBox-prompt',
+              data: data
+            }
+            e.source.postMessage(response, _this.domain)
+          }).catch(function () {
+            var response = {
+              type: 'element-MessageBox-prompt',
+              data: 'cancel'
+            }
+            e.source.postMessage(response, _this.domain)
+          })
+        }
+      }
+    })
+  },
+  // 弹框
+  $alert (message, title, options) {
+    if (window.top === window.self) {
+      return ELEMENT.MessageBox.alert(message, title, options)
+    } else {
+      // 必须同域
+      if (notice.topDomain === notice.domain) {
+        return new Promise(function (resolve, reject) {
+          window.removeEventListener('message', listener)
+          const response = {
+            type: 'element-MessageBox-alert',
+            method: '$msgbox.alert',
+            message: message,
+            title: title,
+            options: options
+          }
+          let callback
+
+          // 如果options参数有指定回调，记录等待执行
+          if (isType.call(options) === '[object Object]') {
+            if (options.callback && isType.call(options.callback) === '[object Function]') {
+              callback = options.callback
+              delete options.callback
+            }
+            if (options.beforeClose) {
+              // 不支持暂停回调
+              delete options.beforeClose
+            }
+          }
+
+          // iframe监听本次top窗口返回的操作消息
+          window.addEventListener('message', listener)
+          window.top.postMessage(response, notice.domain)
+
+          function listener (e) {
+            var sourceDomain = e.origin || e.originalEvent.origin
+            if (notice.domain === sourceDomain) {
+              if (e.data.type === 'element-MessageBox-alert') {
+                if (callback) {
+                  callback(e.data.data)
+                } else {
+                  resolve(e.data.data)
+                }
+              }
+            }
+          }
+        })
+      }
+    }
+  },
+  // $alert注册'success', 'warning', 'info', 'error'的方法
+  register$alertMethods () {
+    if (isType.call(notice.$alert.success) !== '[object Function]') {
+      notice.noticeTypes.forEach(type => {
+        notice.$alert[type] = (message, title, options) => {
+          var titleType = isType.call(title)
+          if (titleType === '[object Object]') {
+            options = title
+            title = ''
+          } else {
+            title = title || ''
+            options = options || {}
+          }
+          options.type = type
+          return notice.$alert(message, title, options)
+        }
+      })
+    }
+  },
+  $confirm (message, title, options) {
+    if (window.top === window.self) {
+      return ELEMENT.MessageBox.confirm(message, title, options)
+    } else {
+      // iframe中
+      // 必须同域
+      if (notice.topDomain === notice.domain) {
+        return new Promise(function (resolve, reject) {
+          window.removeEventListener('message', listener)
+          const response = {
+            type: 'element-MessageBox-confirm',
+            method: '$msgbox.confirm',
+            message: message,
+            title: title,
+            options: options
+          }
+          let callback
+
+          // 如果options参数有指定回调，记录等待执行
+          if (isType.call(options) === '[object Object]') {
+            if (options.callback && isType.call(options.callback) === '[object Function]') {
+              callback = options.callback
+              delete options.callback
+            }
+            if (options.beforeClose) {
+              // 不支持暂停回调
+              delete options.beforeClose
+            }
+          }
+
+          // iframe监听本次top窗口返回的操作消息
+          window.addEventListener('message', listener)
+          window.top.postMessage(response, notice.domain)
+
+          function listener (e) {
+            var sourceDomain = e.origin || e.originalEvent.origin
+            if (notice.domain === sourceDomain) {
+              if (e.data.type === 'element-MessageBox-confirm') {
+                if (callback) {
+                  callback(e.data.data)
+                } else {
+                  if (e.data.data === 'cancel') {
+                    reject()
+                  } else {
+                    resolve()
+                  }
+                }
+              }
+            }
+          }
+        })
+      }
+    }
+  },
+  // $confirm注册'success', 'warning', 'info', 'error'的方法
+  register$confirmMethods: function () {
+    if (isType.call(notice.$confirm.success) !== '[object Function]') {
+      notice.noticeTypes.forEach(type => {
+        notice.$confirm[type] = (message, title, options) => {
+          var titleType = isType.call(title)
+          if (titleType === '[object Object]') {
+            options = title
+            title = ''
+          } else {
+            title = title || ''
+            options = options || {}
+          }
+          options.type = type
+          return notice.$confirm(message, title, options)
+        }
+      }, notice)
+    }
+  },
+  $prompt (message, title, options) {
+    if (window.top === window.self) {
+      return ELEMENT.MessageBox.prompt(message, title, options)
+    } else {
+      // iframe中
+      // 必须同域
+      if (notice.topDomain === notice.domain) {
+        return new Promise(function (resolve, reject) {
+          window.removeEventListener('message', listener)
+          const response = {
+            type: 'element-MessageBox-prompt',
+            method: '$msgbox.prompt',
+            message: message,
+            title: title,
+            options: options
+          }
+
+          // 如果options参数有指定回调
+          if (isType(options) === '[object Object]') {
+            if (options.type) {
+              // 不支持type
+              delete options.type
+            }
+            if (options.callback) {
+              // 不支持callback回调
+              delete options.callback
+            }
+            if (options.beforeClose) {
+              // 不支持暂停回调
+              delete options.beforeClose
+            }
+          }
+
+          // iframe监听本次top窗口返回的操作消息
+          window.addEventListener('message', listener)
+          window.top.postMessage(response, notice.domain)
+
+          function listener (e) {
+            var sourceDomain = e.origin || e.originalEvent.origin
+            if (notice.domain === sourceDomain) {
+              if (e.data.type === 'element-MessageBox-prompt') {
+                if (e.data.data === 'cancel') {
+                  reject()
+                } else {
+                  resolve(e.data.data)
+                }
+              }
+            }
+          }
+        })
+      }
+    }
+  },
+  // 消息提示
+  $message (options) {
+    if (window.top === window.self) {
+      return ELEMENT.Message(options)
+    } else {
+      // iframe中
+      // 必须同域
+      if (notice.topDomain === notice.domain) {
+        var response = {
+          type: 'element-message',
+          method: '$message',
+          options: options
+        }
+        window.top.postMessage(response, notice.domain)
+      }
+    }
+  },
+  // $message注册'success', 'warning', 'info', 'error'的方法
+  register$messageMethods () {
+    if (isType(notice.$message.success) !== '[object Function]') {
+      notice.noticeTypes.forEach(type => {
+        notice.$message[type] = function (options) {
+          console.log(typeof options)
+          if (typeof options === 'string') {
+            options = {
+              type: type,
+              message: options
+            }
+          } else {
+            options.type = type
+          }
+          notice.$message(options)
+        }
+      }, notice)
+    }
+  },
+  // 通知
+  $notify (options) {
+    if (window.top === window.self) {
+      return ELEMENT.Notification(options)
+    } else {
+      // iframe中
+      // 必须同域
+      if (notice.topDomain === notice.domain) {
+        var response = {
+          type: 'element-notification',
+          method: '$notify',
+          options: options
+        }
+        window.top.postMessage(response, notice.domain)
+      }
+    }
+  },
+  // $notify注册'success', 'warning', 'info', 'error'的方法
+  register$notifyMethods () {
+    if (isType(notice.$message.success) !== '[object Function]') {
+      notice.noticeTypes.forEach(type => {
+        notice.$notify[type] = function (options) {
+          if (typeof options === 'string') {
+            options = {
+              type: type,
+              message: options
+            }
+          } else {
+            options.type = type
+          }
+          notice.$notify(options)
+        }
+      }, notice)
+    }
+  },
+  getSummaries (param, arr) {
+    const {
+      columns,
+      data
+    } = param
+    const sums = []
+    columns.forEach((column, index) => {
+      if (index === 0) {
+        sums[index] = '总计'
+        return
+      }
+      // 过滤非求和项
+      if (arr.indexOf(index) !== -1) {
+        sums[index] = 'N/A'
+        return
+      }
+      const values = data.map(item => Number(item[column.property]))
+      if (!values.every(value => isNaN(value))) {
+        sums[index] = values.reduce((prev, curr) => {
+          const value = Number(curr)
+          if (!isNaN(value)) {
+            return prev + curr
+          } else {
+            return prev
+          }
+        }, 0)
+        sums[index] += ' 元'
+      } else {
+        sums[index] = 'N/A'
+      }
+    })
+    return sums
+  }
+}
+export default notice

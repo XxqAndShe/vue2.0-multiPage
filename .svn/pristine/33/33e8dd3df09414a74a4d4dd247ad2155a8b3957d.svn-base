@@ -1,0 +1,29 @@
+define(['vue', '//at.alicdn.com/t/font_580199_xgmzhnuiqiurqkt9.js'], function (Vue) {
+  return Vue.extend({
+    template: '<svg class="svg-icon" :style="style" aria-hidden="true">\
+      <use :xlink:href="iconName"></use>\
+    </svg>',
+    props: {
+      size: {
+        type: [Number, String],
+        default: 14
+      },
+      iconClass: {
+        type: String,
+        required: true
+      }
+    },
+    computed: {
+      iconName: function () {
+        return '#icon-' + this.iconClass
+      },
+      style: function () {
+        var vl = this.size + 'px'
+        return {
+          width: vl,
+          height: vl
+        }
+      }
+    }
+  })
+})

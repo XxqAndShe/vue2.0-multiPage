@@ -1,0 +1,46 @@
+var gulp = require('gulp');
+var htmlmin = require('gulp-htmlmin');
+var cleanCSS = require('gulp-clean-css');
+var uglify = require('gulp-uglify');
+
+function prod () {
+  // html文件压缩
+  gulp.task('htmlmin', function () {
+    return gulp.src('./src/html/**/*.html')
+      .pipe(htmlmin({
+        removeComments: true, //清除HTML注释
+        collapseWhitespace: true, //压缩HTML
+        collapseBooleanAttributes: true,  //省略布尔属性的值 <input checked="true"/> ==> <input />
+        removeEmptyAttributes: true,  //删除所有空格作属性值 <input id="" /> ==> <input />
+        removeScriptTypeAttributes: true, //删除<script>的type="text/javascript"
+        removeStyleLinkTypeAttributes: true,  //删除<style>和<link>的type="text/css"
+        minifyJS: true, //压缩页面JS
+        minifyCSS: true //压缩页面CSS
+      }))
+      .pipe(gulp.dest('dist/html'))
+  })
+
+  // css压缩
+  gulp.task('cssmin', function () {
+    return gulp.src('./src/static/css/**/*.css')
+      .pipe(cleanCSS())
+      .pipe(gulp.dest('dist/static/css'))
+  })
+
+  // lib js拷贝
+  gulp.task('libCopy', function () {
+    return gulp.src('./src/static/js/lib/**/*')
+      .pipe(gulp.dest('dist/static/js/lib'))
+  })
+
+  // js压缩
+  gulp.task('jsmin', function () {
+    return gulp.src(['src/**/*.js', '!src/static/js/lib/**'])
+      .pipe(uglify())
+      .pipe(gulp.dest('dist'))
+  })
+
+  gulp.task('build', ['htmlmin', 'cssmin', 'libCopy', 'jsmin'])
+}
+
+module.exports = prod

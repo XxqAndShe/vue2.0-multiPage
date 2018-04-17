@@ -1,0 +1,101 @@
+import fetch from '../utils/fetch'
+import {
+  param
+} from '../utils'
+
+// 订单列表及一些get请求
+export function getListDate (query, url) {
+  return fetch({
+    url: url + param(query),
+    method: 'get'
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}
+
+// 接单
+export function orderAccept (code) {
+  return fetch({
+    url: '/admin/order/accept',
+    method: 'post',
+    transformRequest: [param],
+    data: {
+      code
+    }
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}
+
+// 完成订单
+export function orderCompleted (code) {
+  return fetch({
+    url: '/admin/order/completed',
+    method: 'post',
+    transformRequest: [param],
+    data: {
+      code
+    }
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}
+
+// 拒绝订单
+export function orderDenied (code) {
+  return fetch({
+    url: '/admin/order/denied',
+    method: 'post',
+    transformRequest: [param],
+    data: {
+      code
+    }
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}
+// 登陆
+export function setLogin (code) {
+  return fetch({
+    url: '/login',
+    method: 'post',
+    transformRequest: [param],
+    data: code
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}
+// 刷新token
+export function refresh () {
+  return fetch({
+    url: '/token/refresh',
+    method: 'get'
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}
+// 结算
+export function accounts (code) {
+  return fetch({
+    url: '/admin/settlement/coupon/clean',
+    method: 'post',
+    transformRequest: [param],
+    data: code
+  }).then(({
+    data
+  }) => {
+    return data
+  })
+}

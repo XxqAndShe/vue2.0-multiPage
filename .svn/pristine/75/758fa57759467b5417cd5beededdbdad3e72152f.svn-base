@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>订单查询</title>
+	<link rel="stylesheet" href="/static/css/normalize.min.css">
+	<link rel="stylesheet" href="//at.alicdn.com/t/font_580199_qdrw4brplclyp66r.css">
+	<link rel="stylesheet" href="/static/css/all.css">
+	<script src="/static/js/lib/es6-promise.auto.min.js"></script>
+	<script src="/static/js/lib/require.min.js"></script>
+	<script data-path="../../" src="/static/config.js"></script>
+</head>
+
+<body>
+	<div id="app" v-clock>
+		<layout-table>
+			<div slot="header-left-handler">
+				<el-button :loading="orderAccepting" :disabled="selects.length === 0" @click="doSettlement" type="primary" icon="el-icon-tickets"
+				 size='small'>{{msgButton}}</el-button>
+			</div>
+			<div slot="header-right-filters">
+				<el-input style="width: 220px;margin-bottom: 10px;" v-model="listQuery.sid" placeholder="商家ID" size='small' @keyup.enter.native="doSerach"></el-input>
+				<el-input style="width: 220px;margin-bottom: 10px;" v-model="listQuery.certNo" placeholder="凭证号" size='small' @keyup.enter.native="doSerach"></el-input>
+			</div>
+			<div slot="header-right-handler">
+				<el-button type="primary" icon="el-icon-search" size='small' @click="doSerach">查询</el-button>
+			</div>
+			<!-- <div slot="main-settings">
+				<b>&nbsp;&nbsp;商家名称：宝祥3S店</b>
+			</div> -->
+			<!-- 表格table -->
+			<el-table slot="main" ref="table" :loading="loading" :data="settlementData" :highlight-current-row="true" size="small" border
+			 @select="setSelect" @select-all="setSelectAll" stripe tooltip-effect="dark" height="100%" :header-cell-style="{'background-color': '#f5f7fa'}"
+			 style="width: 100%;height: 100%;">
+				<el-table-column fixed type="selection">
+				</el-table-column>
+				<el-table-column show-overflow-tooltip prop="shopName" label="商家名称">
+					<!-- <template slot-scope="scope">{{ scope.row.date }}</template> -->
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="sid" label="商家ID">
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="code" label="订单号">
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="certNo" label="凭证号">
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="countAmount" label="优惠券总额">
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="completeSettlement" label="已结">
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="unSettlement" label="未结">
+				</el-table-column>
+
+				<el-table-column show-overflow-tooltip prop="cleanStatus" label="结算状态">
+				</el-table-column>
+			</el-table>
+
+			<div slot="footer">
+				<el-pagination background border :page-sizes="[10, 20, 30, 40]" :page-size="listQuery.len" :total="total" :current-page="listQuery.p + 1"
+				 @size-change="sizeChange" @current-change="onCurrentPage" layout="total, sizes, prev, pager, next, jumper">
+				</el-pagination>
+			</div>
+		</layout-table>
+	</div>
+	<script>
+		require(['vue', 'ELEMENT', 'util/index', 'components/layout-table'], function (Vue, ELEMENT, u, LayoutTable) {
+			Vue.use(ELEMENT)
+			new Vue({
+				el: '#app',
+				components: {
+					LayoutTable: LayoutTable
+				},
+				data: function () {
+					return {
+						filterTime: '',
+						orderAccepting: false,
+						loading: false,
+						msgButton: "结算",
+						orderList: [],
+						selects: [],
+						settlementData: [],
+						listQuery: {
+							p: 0,
+							len: 20,
+							sort: '-orderTime',
+							sid: "",//商家id
+							certNo: ""//凭证号
+						},
+						//总页数
+						total: 0,
+						filterTime: '',
+						//表格数据
+					}
+				},
+				created: function () {
+					// utils的一些初始化动作
+					u.init(this);
+					//进入加载
+					this.getData();
+				},
+				methods: {
+					//日期组件日期选择
+					timeChange: function () {
+
+					},
+					//结算
+					doSettlement: function () {
+						u.$confirm('是否确认对所勾选订单号进行' + this.msgButton + '？', '提示', {
+							cancelButtonText: '取消',
+							confirmButtonText: '确定',
+							type: 'info'
+						}).then(() => {
+							//逗号连接
+							var str = '';
+							this.selects.forEach(function (item) {
+								str = item.certNo + ',';
+							});
+							//去除最后一个逗号
+							str = str.substring(0, str.length - 1);
+							//调用接口
+							u.post('/admin/settlement/coupon/clean', { certNo: str }).always(function (data) {
+								if (data.success) {
+									u.$message.success('操作成功');
+									//刷新表格
+									this.getData();
+								} else {
+									u.$message.error(data.message);
+								}
+								this.orderAccepting = false;
+								this.loading = false;
+								//选中清零
+								this.selects = [];
+							})
+						}).catch(function () { })
+					},
+					//搜索
+					doSerach: function () {
+						this.getData();
+						this.selects = [];//选中清零
+					},
+					//每页条数
+					sizeChange: function (size) {
+						this.listQuery.len = size
+					},
+					//选择单行
+					setSelect(event) {
+						this.selects = event;
+						this.msgButton = this.selects.length > 1 ? "批量结算" : "结算";
+					},
+					//选择全部
+					setSelectAll(event) {
+						this.selects = event;
+						this.msgButton = this.selects.length > 1 ? "批量结算" : "结算";
+					},
+					//当前页
+					onCurrentPage: function (page) {
+						this.listQuery.p = page - 1
+					},
+					//获取列表数据
+					getData: function () {
+						this.loading = true
+						u.get('/admin/settlement/coupon/list', this.listQuery, function (data) {
+							if (data.success) {
+								this.settlementData = data.data.content;
+								this.total = data.data.totalElements;
+							} else {
+								u.$message.error(data.message);
+							}
+						}).always(function () {
+							this.loading = false
+						})
+					},
+				}
+			})
+		})
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+// 全局配置文件，服务地址配置
+
+// 核心服务地址
+window.baseUrl = 'http://192.168.8.218:7070'
+
+// webSocket服务地址
+window.sockUrl = 'http://192.168.8.200:15674'

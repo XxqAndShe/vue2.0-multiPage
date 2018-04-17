@@ -1,0 +1,233 @@
+<template>
+  <div class="layout-table">
+    <div class="layout-header">
+      <div class="layout-header-left" :class="{enter: headerVisible}" @mouseenter="headerMouseenter" @mouseleave="headerMouseleave">
+        <div class="header-left-hover-box">
+          <slot name="header-left-handler">left</slot>
+        </div>
+        <div class="filters-more" v-if="bIconButton">
+          <i style="color: #606266" class="el-icon-d-arrow-right"></i>
+        </div>
+      </div>
+      <div class="layout-header-right" :class="{enter: filtersVisible}" @mouseenter="filterMouseenter" @mouseleave="filterMouseleave">
+        <div class="layout-header-right-filters">
+          <div class="filters-hover-box">
+            <slot name="header-right-filters">filters</slot>
+          </div>
+          <div class="filters-more" v-if="bIconInput">
+            <i style="color: #606266" class="el-icon-d-arrow-right"></i>
+          </div>
+        </div>
+        <div class="layout-header-right-handler">
+          <slot name="header-right-handler">handler</slot>
+        </div>
+      </div>
+    </div>
+    <div class="layout-main">
+      <div v-show="showSettings" class="main-settings">
+        <slot name="main-settings"></slot>
+      </div>
+      <div class="main-container">
+        <slot name="main">main</slot>
+      </div>
+    </div>
+    <div class="layout-footer">
+      <slot name="footer">footer</slot>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'layout-table',
+  data () {
+    return {
+      headerVisible: false,
+      headerLeaveTimer: null,
+      filtersVisible: false,
+      filtersLeaveTimer: null,
+      showSettings: false
+    }
+  },
+  props: {
+    bIconButton: {
+      type: Boolean,
+      default: true
+    },
+    bIconInput: {
+      type: Boolean,
+      default: true
+    }
+  },
+  mounted: function () {
+    this.showSettings = !!this.$slots['main-settings']
+  },
+  methods: {
+    headerMouseenter () {
+      clearInterval(this.headerLeaveTimer)
+      this.headerVisible = true
+    },
+    headerMouseleave () {
+      this.headerLeaveTimer = setTimeout(() => {
+        this.headerVisible = false
+      }, 400)
+    },
+    filterMouseenter () {
+      clearInterval(this.filtersLeaveTimer)
+      this.filtersVisible = true
+    },
+    filterMouseleave () {
+      this.filtersLeaveTimer = setTimeout(() => {
+        this.filtersVisible = false
+      }, 400)
+    }
+  }
+}
+</script>
+
+<style lang="less">
+@import "../styles/variable.less";
+
+.layout-table {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  // 动态表格样式bug修复
+  .el-table__header-wrapper,
+  .el-table__fixed-header-wrapper {
+    height: 48px;
+    table {
+      height: 100%;
+    }
+  }
+  .el-table th > .cell {
+    height: 100%;
+  }
+  .el-table--mini {
+    .el-table__header-wrapper,
+    .el-table__fixed-header-wrapper {
+      height: 37px;
+    }
+  }
+  .el-table--small {
+    .el-table__header-wrapper,
+    .el-table__fixed-header-wrapper {
+      height: 41px;
+    }
+  }
+  .el-table--medium {
+    .el-table__header-wrapper,
+    .el-table__fixed-header-wrapper {
+      height: 44px;
+    }
+  }
+  // 组件
+  .layout-header {
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    margin: 12px 12px 20px;
+    flex: 0 0 53px;
+    z-index: 10;
+    .layout-header-left {
+      position: relative;
+      flex: 1;
+      padding: 10px;
+      border-left: 4px solid #409eff;
+      background-color: @table-header-bg;
+      &.enter {
+        .header-left-hover-box {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: auto;
+          min-height: 100%;
+          padding: 10px;
+          background-color: #ebeef5;
+          box-shadow: 0 0 5px #ebeef5;
+        }
+      }
+    }
+    .header-left-hover-box {
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      .el-button {
+        margin: 0 10px 10px 0;
+      }
+    }
+    .layout-header-right {
+      position: relative;
+      display: flex;
+      flex: 0 0 400px;
+      &.enter {
+        .filters-hover-box {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: auto;
+          min-height: 100%;
+          padding: 10px;
+          background-color: #ebeef5;
+          box-shadow: 0 0 5px #ebeef5;
+        }
+      }
+    }
+    .layout-header-right-filters {
+      position: relative;
+      flex: 1;
+      padding: 10px;
+      background-color: @table-header-bg;
+    }
+    .filters-hover-box {
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .filters-more {
+      position: absolute;
+      right: 10px;
+      top: 16px;
+      transform: rotateZ(90deg);
+    }
+    .layout-header-right-handler {
+      padding: 10px;
+      flex: 0 0 110px;
+      background-color: @table-header-bg;
+    }
+  }
+  .layout-main {
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin: 0 12px 20px 12px;
+    border-bottom: 0;
+    overflow: hidden;
+    z-index: 9;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+    &:hover {
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+    }
+    .main-settings {
+      // margin-bottom: 5px;
+      // background-color: @table-header-bg;
+      height: 30px;
+      line-height: 30px;
+    }
+    .main-container {
+      flex: 1;
+      overflow: hidden;
+    }
+  }
+  .layout-footer {
+    box-sizing: border-box;
+    flex: 0 0 70px;
+    margin: 0 12px;
+  }
+}
+</style>

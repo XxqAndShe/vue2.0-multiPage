@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>登陆</title>
+  <link rel="stylesheet" href="/static/css/normalize.min.css">
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_580199_qdrw4brplclyp66r.css">
+  <link rel="stylesheet" href="/static/css/all.css">
+  <script src="/static/js/lib/es6-promise.auto.min.js"></script>
+  <script src="/static/js/lib/require.min.js"></script>
+  <script data-path="../" src="/static/config.js"></script>
+</head>
+
+<body>
+  <div id="login">
+    <div class="login-box">
+      <h1>XXX系统</h1>
+      <span class="title">欢迎登陆</span>
+      <span class="info" v-if="errorFlag">{{errorInfo}}</span>
+      <span class="login-accound">
+        <label>
+          <i class="user" title="会员名"></i>
+        </label>
+        <input type="text" placeholder="请输入用户名" maxlength="11" v-model="loginUser.userName" id="mobile" @input="inputFocus(mobile.value)">
+      </span>
+      <span class="login-accound">
+        <label>
+          <i class="password" title="密码"></i>
+        </label>
+        <input type="password" placeholder="请输入密码" v-model="loginUser.password">
+      </span>
+      <span class="fixd-password">
+        <span>
+          <label>
+            <input type="checkbox"> 14天免登陆
+          </label>
+        </span>
+      </span>
+      <span class="confirm-login">
+        <a href="javascript:void(0)" @click="doLogin">确认登陆</a>
+      </span>
+    </div>
+  </div>
+  <script type="text/javascript">
+    require([
+      'vue',
+      'ELEMENT',
+      'util/index',
+      'util/auth'
+    ], function (Vue, ELEMENT, u, a) {
+      if (top != self) {
+        top.location.href = self.location.href
+      }
+      Vue.use(ELEMENT);
+      new Vue({
+        el: '#login',
+        data: function () {
+          return {
+            loginUser: {
+              userName: "", //登陆账号
+              password: "" //登陆密码
+            },
+            errorInfo: "请输入用户名",
+            errorFlag: false,
+          }
+        },
+        created: function () {},
+        mounted() {},
+        methods: {
+          inputFocus: function (event) {
+            event = event.replace(/\D/g,'');
+            this.loginUser.userName = event;
+          },
+          // 登录验证
+          valid: function () {
+            var phoneReg = /^1[3456789]\d{9}$/;
+            if (!this.loginUser.userName) {
+              this.errorFlag = true;
+              this.errorInfo = '用户名不能为空';
+              return false;
+            } else if (!phoneReg.test(this.loginUser.userName)) {
+              this.errorFlag = true;
+              this.errorInfo = '请输入正确的手机号码';
+              return;
+            } else if (!this.loginUser.password) {
+              this.errorFlag = true;
+              this.errorInfo = '密码不能为空';
+              return false;
+            }
+            return true;
+          },
+          //登陆
+          doLogin: function () {
+            a.checkUserLogin();
+            if(!this.valid()){
+              return
+            }
+            u.post('/login', this.loginUser).always(function (data) {
+                 console.log(data);
+              })
+          },
+          //获取用户信息
+          getUserInfo() {
+
+          },
+
+        }
+      })
+    });
+  </script>
+</body>
+
+</html>

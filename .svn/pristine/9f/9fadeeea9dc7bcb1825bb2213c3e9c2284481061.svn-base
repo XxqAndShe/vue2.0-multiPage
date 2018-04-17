@@ -1,0 +1,54 @@
+var gulp = require('gulp');
+var less = require('gulp-less');
+var autoprefixer = require('gulp-autoprefixer');
+var concat = require('gulp-concat');
+var browserSync = require('browser-sync').create();
+var reload = browserSync.reload;
+
+// ============ dev 开发环境 =============
+function dev () {
+  // html
+  gulp.task('html:dev', function () {
+    return gulp.src('./src/html/**/*.html')
+      .pipe(reload({
+        stream: true
+      }))
+  })
+  // 编译、合并less
+  gulp.task('less:dev', function () {
+    return gulp.src('./src/styles/**/*.less')
+      .pipe(less())
+      .pipe(autoprefixer({
+        browsers: ["> 1%", "last 2 versions", "not ie <= 8"],
+        cascade: true
+      }))
+      .pipe(concat('all.css'))
+      .pipe(gulp.dest('./src/static/css/'))
+      .pipe(reload({
+        stream: true
+      }))
+  })
+
+  // js监听
+  gulp.task('js:dev', function () {
+    return gulp.src('./src/**/*.js')
+      .pipe(reload({
+        stream: true
+      }))
+  })
+
+  gulp.task('dev', ['less:dev'], function () {
+    browserSync.init({
+      server: {
+        baseDir: "./src",
+        index: '/html'
+      },
+      notify: false
+    });
+    gulp.watch('./src/html/**/*.html', ['html:dev']);
+    gulp.watch('./src/styles/**/*.less', ['less:dev']);
+    gulp.watch('./src/**/*.js', ['js:dev']);
+  })
+}
+
+module.exports = dev;

@@ -1,0 +1,25 @@
+define(['jquery', 'util/index'], function ($, u) {
+  return {
+    //获取用户信息
+    checkUserLogin: function (param) {
+      var isLoggedIn = false; //是否可以进入页面
+      return new Promise(function (resolve, reject) {
+        u.get('', function (json) {
+          if (json) { //通过
+            localStorage.setItem('tokon', json);
+            isLoggedIn = true;
+            resolve(isLoggedIn);
+          } else { //不通过
+            isLoggedIn = false;
+            resolve(isLoggedIn);
+          }
+        }).always(function () {
+          //清除用户信息localStorage
+          localStorage.removeItem("tokon")
+          isLoggedIn = false;
+          reject(isLoggedIn);
+        })
+      })
+    },
+  }
+})

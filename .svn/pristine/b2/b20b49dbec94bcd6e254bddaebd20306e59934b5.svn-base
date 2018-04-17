@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>XXX系统</title>
+  <link rel="stylesheet" href="/static/css/normalize.min.css">
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_580199_qdrw4brplclyp66r.css">
+  <link rel="stylesheet" href="/static/css/all.css">
+  <script src="/static/js/lib/es6-promise.auto.min.js"></script>
+  <script src="/static/js/lib/require.min.js"></script>
+  <script data-path="../" src="/static/config.js"></script>
+</head>
+
+<body>
+  <div id="login">
+    <div class="login-box">
+      <h1>XXX系统</h1>
+      <span class="title">欢迎登陆</span>
+      <span class="login-accound">
+        <label>
+          <i class="user" title="会员名"></i>
+        </label>
+        <input type="text" placeholder="请输入账号">
+      </span>
+      <span class="login-accound">
+        <label>
+          <i class="password" title="密码"></i>
+        </label>
+        <input type="text" placeholder="请输入密码">
+      </span>
+      <span class="fixd-password">
+        <span>
+          <label>
+            <input type="checkbox"> 记住密码
+          </label>
+        </span>
+      </span>
+      <span class="confirm-login">
+        <a href="javascript:void(0)">确认登陆</a>
+      </span>
+    </div>
+  </div>
+  <script type="text/javascript">
+    require([
+      'vue',
+      'ELEMENT',
+      'util/index'
+    ], function (Vue, ELEMENT, u) {
+      if (top != self) {
+        top.location.href = self.location.href
+      }
+      Vue.use(ELEMENT);
+      new Vue({
+        el: '#app-index',
+        data: function () {
+          return {}
+        },
+        created: function () {},
+        mounted() {},
+        methods: {}
+      })
+    });
+  </script>
+</body>
+
+</html>

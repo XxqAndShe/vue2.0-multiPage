@@ -1,0 +1,405 @@
+define(['jquery', 'ELEMENT'], function ($, ELEMENT) {
+  return {
+    // 全局baseurl配置
+    baseUrl: 'http://192.168.8.218:7070',
+    domain: window.location.origin,
+    // 初始化的一些操作、在created钩子中调用
+    init: function (thisValue) {
+      // console.log(ELEMENT)
+      this.setAjaxContext(thisValue)
+      // 注册消息方法
+      this.register$messageMethods()
+      this.register$notifyMethods()
+      this.register$alertMethods()
+      this.register$confirmMethods()
+      return this
+    },
+    // -----------------------------------------------------  ajax相关（全局配置、支持全局baseurl、统一错误处理） ----------------------------------------------
+    // ajax全局context设置，created钩子中调用
+    setAjaxContext: function (thisValue) {
+      // 设置ajax的context，然后ajax回调函数内直接使用this
+      $.ajaxSetup({
+        context: thisValue
+      })
+      return this
+    },
+    // ajax请求，参数同$.ajax参数
+    ajax: function (options) {
+      var _this = this
+      options.url = this.baseUrl + options.url
+      return $.ajax(options).catch(function (error) {
+        _this.$message.error('请检查您的网络')
+      })
+    },
+    // get请求，参数同$.get参数
+    get: function () {
+      var _this = this
+      arguments[0] = this.baseUrl + arguments[0]
+      return $.get.apply(null, arguments).catch(function (error) {
+        _this.$message.error('请检查您的网络')
+      })
+    },
+    // post请求，参数同$.post参数
+    post: function () {
+      var _this = this
+      arguments[0] = this.baseUrl + arguments[0]
+      return $.post.apply(null, arguments).catch(function (error) {
+        _this.$message.error('请检查您的网络')
+      })
+    },
+    // ----------------------------------------------------- 封装element-ui的Notice组件部分，支持跨窗口(总是在top窗口中弹出) ----------------------------------------------
+    // 封装的$message、$notify不支持方法和回调
+    // 当前self != top时，封装的$alert、$confirm、$prompt不支持 beforeClose 回调，$prompt不支持callback
+    // 封装的$alert、$confirm、$prompt支持promise
+    // 监听的消息配置
+    noticeListens: {
+      'element-message': false,
+      'element-notification': false,
+      'element-MessageBox-alert': false,
+      'element-MessageBox-confirm': false,
+      'element-MessageBox-prompt': false
+    },
+    noticeTypes: ['success', 'warning', 'info', 'error'],
+    // 弹框
+    $alert: function (message, title, options) {
+      var _this = this;
+      if (top === self) {
+        return ELEMENT.MessageBox.alert(message, title, options);
+      } else {
+        // iframe中
+        var topDomain = window.top.location.origin;
+        // 必须同域
+        if (topDomain === this.domain) {
+          return new Promise(function (resolve, reject) {
+            window.removeEventListener('message', listener);
+            var response = {
+                type: 'element-MessageBox-alert',
+                method: '$msgbox.alert',
+                message: message,
+                title: title,
+                options: options
+              },
+              callback, beforeClose;
+
+            // 如果options参数有指定回调，记录等待执行
+            if ($.type(options) === 'object') {
+              if (options.callback && $.type(options.callback) === 'function') {
+                callback = options.callback
+                delete options.callback
+              }
+              if (options.beforeClose) {
+                // 不支持暂停回调
+                delete options.beforeClose
+              }
+            }
+
+            // iframe监听本次top窗口返回的操作消息
+            window.addEventListener('message', listener);
+            window.top.postMessage(response, _this.domain);
+
+            function listener(e) {
+              var domain = window.location.origin;
+              var sourceDomain = e.origin || e.originalEvent.origin;
+              if (domain === sourceDomain) {
+                if (e.data.type === 'element-MessageBox-alert') {
+                  if (callback) {
+                    callback(e.data.data)
+                  } else {
+                    resolve(e.data.data)
+                  }
+                }
+              }
+            }
+          })
+        }
+      }
+    },
+    // $alert注册'success', 'warning', 'info', 'error'的方法
+    register$alertMethods: function () {
+      if ($.type(this.$alert.success) !== 'function') {
+        var _this = this;
+        this.noticeTypes.forEach(function (type) {
+          this.$alert[type] = function (message, title, options) {
+            var titleType = $.type(title);
+            if (titleType === 'object') {
+              options = title;
+              title = '';
+            } else {
+              title = title || '';
+              options = options || {};
+            }
+            options.type = type;
+            return _this.$alert(message, title, options);
+          }
+        }, this)
+      }
+    },
+    $confirm: function (message, title, options) {
+      var _this = this;
+      if (top === self) {
+        return ELEMENT.MessageBox.confirm(message, title, options);
+      } else {
+        // iframe中
+        var topDomain = window.top.location.origin;
+        // 必须同域
+        if (topDomain === this.domain) {
+          return new Promise(function (resolve, reject) {
+            window.removeEventListener('message', listener);
+            var response = {
+                type: 'element-MessageBox-confirm',
+                method: '$msgbox.confirm',
+                message: message,
+                title: title,
+                options: options
+              },
+              callback, beforeClose;
+
+            // 如果options参数有指定回调，记录等待执行
+            if ($.type(options) === 'object') {
+              if (options.callback && $.type(options.callback) === 'function') {
+                callback = options.callback
+                delete options.callback
+              }
+              if (options.beforeClose) {
+                // 不支持暂停回调
+                delete options.beforeClose
+              }
+            }
+
+            // iframe监听本次top窗口返回的操作消息
+            window.addEventListener('message', listener);
+            window.top.postMessage(response, _this.domain);
+
+            function listener(e) {
+              var domain = window.location.origin;
+              var sourceDomain = e.origin || e.originalEvent.origin;
+              if (domain === sourceDomain) {
+                if (e.data.type === 'element-MessageBox-confirm') {
+                  if (callback) {
+                    callback(e.data.data)
+                  } else {
+                    if (e.data.data === 'cancel') {
+                      reject()
+                    } else {
+                      resolve()
+                    }
+                  }
+                }
+              }
+            }
+          })
+        }
+      }
+    },
+    // $confirm注册'success', 'warning', 'info', 'error'的方法
+    register$confirmMethods: function () {
+      if ($.type(this.$confirm.success) !== 'function') {
+        var _this = this;
+        this.noticeTypes.forEach(function (type) {
+          this.$confirm[type] = function (message, title, options) {
+            var titleType = $.type(title);
+            if (titleType === 'object') {
+              options = title;
+              title = '';
+            } else {
+              title = title || '';
+              options = options || {};
+            }
+            options.type = type;
+            return _this.$confirm(message, title, options);
+          }
+        }, this)
+      }
+    },
+    $prompt: function (message, title, options) {
+      var _this = this;
+      if (top === self) {
+        return ELEMENT.MessageBox.prompt(message, title, options);
+      } else {
+        // iframe中
+        var topDomain = window.top.location.origin;
+        // 必须同域
+        if (topDomain === this.domain) {
+          return new Promise(function (resolve, reject) {
+            window.removeEventListener('message', listener);
+            var response = {
+              type: 'element-MessageBox-prompt',
+              method: '$msgbox.prompt',
+              message: message,
+              title: title,
+              options: options
+            };
+
+            // 如果options参数有指定回调
+            if ($.type(options) === 'object') {
+              if (options.type) {
+                // 不支持type
+                delete options.type
+              }
+              if (options.callback) {
+                // 不支持callback回调
+                delete options.callback
+              }
+              if (options.beforeClose) {
+                // 不支持暂停回调
+                delete options.beforeClose
+              }
+            }
+
+            // iframe监听本次top窗口返回的操作消息
+            window.addEventListener('message', listener);
+            window.top.postMessage(response, _this.domain);
+
+            function listener(e) {
+              var domain = window.location.origin;
+              var sourceDomain = e.origin || e.originalEvent.origin;
+              if (domain === sourceDomain) {
+                if (e.data.type === 'element-MessageBox-prompt') {
+                  if (e.data.data === 'cancel') {
+                    reject()
+                  } else {
+                    resolve(e.data.data)
+                  }
+                }
+              }
+            }
+          })
+        }
+      }
+    },
+    // 消息提示
+    $message: function (options) {
+      if (top === self) {
+        return ELEMENT.Message(options)
+      } else {
+        // iframe中
+        var topDomain = window.top.location.origin
+        // 必须同域
+        if (topDomain === this.domain) {
+          var response = {
+            type: 'element-message',
+            method: '$message',
+            options: options
+          }
+          window.top.postMessage(response, this.domain)
+        }
+      }
+    },
+    // $message注册'success', 'warning', 'info', 'error'的方法
+    register$messageMethods: function () {
+      if ($.type(this.$message.success) !== 'function') {
+        var _this = this;
+        this.noticeTypes.forEach(function (type) {
+          this.$message[type] = function (options) {
+            if ($.type(options) === 'string') {
+              options = {
+                type: type,
+                message: options
+              }
+            } else {
+              options.type = type
+            }
+            _this.$message(options)
+          }
+        }, this)
+      }
+    },
+    // 通知
+    $notify: function (options) {
+      if (top === self) {
+        return ELEMENT.Notification(options)
+      } else {
+        // iframe中
+        var topDomain = window.top.location.origin
+        // 必须同域
+        if (topDomain === this.domain) {
+          var response = {
+            type: 'element-notification',
+            method: '$notify',
+            options: options
+          }
+          window.top.postMessage(response, this.domain)
+        }
+      }
+    },
+    // $notify注册'success', 'warning', 'info', 'error'的方法
+    register$notifyMethods: function () {
+      if ($.type(this.$notify.success) !== 'function') {
+        var _this = this
+        this.noticeTypes.forEach(function (type) {
+          this.$notify[type] = function (options) {
+            if ($.type(options) === 'string') {
+              options = {
+                type: type,
+                message: options
+              }
+            } else {
+              options.type = type
+            }
+            _this.$notify(options)
+          }
+        }, this)
+      }
+    },
+    // 监听iframe窗口的消息
+    onPostMessageOfNotice: function (config) {
+      var _this = this
+      if (self !== top) {
+        return false
+      }
+      $.extend(this.noticeListens, config)
+
+      window.addEventListener('message', function (e) {
+        var sourceDomain = e.origin || e.originalEvent.origin;
+        if (_this.domain === sourceDomain) {
+          if (e.data.type === 'element-message' && _this.noticeListens['element-message']) {
+            _this.$message(e.data.options)
+          }
+          if (e.data.type === 'element-notification' && _this.noticeListens['element-notification']) {
+            _this.$notify(e.data.options)
+          }
+          if (e.data.type === 'element-MessageBox-alert' && _this.noticeListens['element-MessageBox-alert']) {
+            console.log(e.data)
+            _this.$alert(e.data.message, e.data.title, e.data.options).then(function (action) {
+              var response = {
+                type: 'element-MessageBox-alert',
+                data: action
+              };
+              e.source.postMessage(response, _this.domain);
+            })
+          }
+          if (e.data.type === 'element-MessageBox-confirm' && _this.noticeListens['element-MessageBox-confirm']) {
+            _this.$confirm(e.data.message, e.data.title, e.data.options).then(function () {
+              var response = {
+                type: 'element-MessageBox-confirm',
+                data: 'confirm'
+              };
+              e.source.postMessage(response, _this.domain);
+            }).catch(function () {
+              var response = {
+                type: 'element-MessageBox-confirm',
+                data: 'cancel'
+              };
+              e.source.postMessage(response, _this.domain);
+            })
+          }
+          if (e.data.type === 'element-MessageBox-prompt' && _this.noticeListens['element-MessageBox-prompt']) {
+            _this.$prompt(e.data.message, e.data.title, e.data.options).then(function (data) {
+              var response = {
+                type: 'element-MessageBox-prompt',
+                data: data
+              };
+              e.source.postMessage(response, _this.domain);
+            }).catch(function () {
+              var response = {
+                type: 'element-MessageBox-prompt',
+                data: 'cancel'
+              };
+              e.source.postMessage(response, _this.domain);
+            })
+          }
+        }
+      })
+    },
+  }
+})

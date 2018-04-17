@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="/static/css/normalize.min.css">
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_580199_qdrw4brplclyp66r.css">
+  <link rel="stylesheet" href="/static/css/all.css">
+  <script src="/static/js/lib/es6-promise.auto.min.js"></script>
+  <script src="/static/js/lib/require.min.js"></script>
+  <script data-path="../" src="/static/config.js"></script>
+</head>
+<body>
+  <div id="app-index" v-clock>
+    <!-- 顶部 -->
+    <div id="header">
+      <div class="name">XXX管理系统</div>
+      <div class="nav">
+        <screenfull fill="#fff"></screenfull>
+        <el-dropdown style="margin-left: 10px" :show-timeout="120">
+          <span class="el-dropdown-link">
+            <span class="avatar-box"><img class="avatar" alt=""></span><i class="el-icon-arrow-down el-icon--right"></i>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item disabled>用户中心</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;个人信息</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;退出登陆</el-dropdown-item>
+            <el-dropdown-item disabled divided>设置中心</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;个人设置</el-dropdown-item>
+            <el-dropdown-item>&nbsp;&nbsp;&nbsp;系统设置</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+    </div>
+    <!-- 侧栏 -->
+    <div id="aside" :class="{'collapse-menu': collapseMenu}">
+      <div class="collapse-menu" @click="collapseMenu = !collapseMenu">
+        <icon-svg style="fill: #fff;" :size="20" icon-class="ego-menu"></icon-svg>
+      </div>
+      <el-menu
+        :default-active="framePath"
+        class="el-menu-vertical-demo"
+        background-color="#1c2f41"
+        text-color="rgba(255, 255, 255, 0.65)"
+        active-text-color="#409EFF"
+        :collapse="collapseMenu"
+        style="width: 100%;box-sizing: border-box;border-right: none;">
+        <el-submenu index="1">
+          <template slot="title">
+            <icon-svg size="20" icon-class="dingdanguanli1"></icon-svg>
+            <span slot="title">订单管理</span>
+          </template>
+          <el-menu-item index="/html/order/proxy.html" @click.native="go('/html/order/proxy.html')">代理接单</el-menu-item>
+          <el-menu-item index="/html/order/query.html" @click.native="go('/html/order/query.html')">订单查询</el-menu-item>
+        </el-submenu>
+        <el-submenu index="2">
+          <template slot="title">
+            <icon-svg size="20" icon-class="iconfontshangjia"></icon-svg>
+            <span slot="title">商家管理</span>
+          </template>
+          <el-menu-item index="2-1" @click.native="go('/html/business/authentication.html')">商家认证</el-menu-item>
+          <el-menu-item index="2-2" @click.native="go('/html/business/data-review.html')">资料审核</el-menu-item>
+          <el-menu-item index="2-3" @click.native="go('/html/business/preferential-review.html')">优惠审核</el-menu-item>
+          <el-menu-item index="2-4" @click.native="go('/html/business/merchant-query.html')">商家查询</el-menu-item>
+          <el-menu-item index="2-5" @click.native="go('/html/business/preferential-review.html')">商家资料托管</el-menu-item>
+        </el-submenu>
+        <el-submenu index="3">
+          <template slot="title">
+            <icon-svg size="20" icon-class="dianpu"></icon-svg>
+            <span slot="title">自营店</span>
+          </template>
+          <el-menu-item index="3-1" @click.native="go('/html/self-shop/order.html')">订单</el-menu-item>
+          <el-menu-item index="3-2" @click.native="go('/html/self-shop/business-setting.html')">业务设置</el-menu-item>
+          <el-menu-item index="3-3" @click.native="go('/html/self-shop/preferential-setting.html')">优惠设置</el-menu-item>
+          <el-menu-item index="3-4" @click.native="go('/html/self-shop/obd-management.html')">OBD设备管理</el-menu-item>
+        </el-submenu>
+        <el-submenu index="4">
+          <template slot="title">
+            <icon-svg size="20" icon-class="pingtaiyingyong"></icon-svg>
+            <span slot="title">平台运营</span>
+          </template>
+          <el-menu-item index="4-1" @click.native="go('/html/operate/activity-settings.html')">平台活动设置</el-menu-item>
+          <el-menu-item index="4-2" @click.native="go('/html/operate/revenue-management.html')">平台营收管理</el-menu-item>
+          <el-menu-item index="4-3" @click.native="go('/html/operate/business-setting.html')">平台业务设置</el-menu-item>
+          <el-menu-item index="4-4" @click.native="go('/html/operate/agreement-management.html')">结算协议管理</el-menu-item>
+          <el-menu-item index="4-5" @click.native="go('/html/operate/short-message.html')">短信平台记账</el-menu-item>
+          <el-menu-item index="4-6" @click.native="go('/html/operate/violation-accounts.html')">聚合违章记账</el-menu-item>
+          <el-menu-item index="4-7" @click.native="go('/html/operate/customer-service.html')">客服管理</el-menu-item>
+          <el-menu-item index="4-8" @click.native="go('/html/operate/coupons-management.html')">机构优惠券管理</el-menu-item>
+          <el-menu-item index="4-9" @click.native="go('/html/operate/settlement.html')">发票结算</el-menu-item>
+        </el-submenu>
+        <el-submenu index="5">
+          <template slot="title">
+            <icon-svg size="20" icon-class="xitongguanli1"></icon-svg>
+            <span slot="title">系统管理</span>
+          </template>
+          <el-menu-item index="5-1">数据字典维护</el-menu-item>
+          <el-menu-item index="5-2">权限管理</el-menu-item>
+          <el-menu-item index="5-3">角色管理</el-menu-item>
+          <el-menu-item index="5-4">员工管理</el-menu-item>
+          <el-menu-item index="5-5">菜单管理</el-menu-item>
+          <el-menu-item index="5-6">系统异常管理</el-menu-item>
+          <el-menu-item index="5-7">系统消息查看</el-menu-item>
+          <el-menu-item index="5-8">流程定义</el-menu-item>
+        </el-submenu>
+        <el-submenu index="6">
+          <template slot="title">
+            <icon-svg size="20" icon-class="weibiaoti2"></icon-svg>
+            <span slot="title">客户管理</span>
+          </template>
+          <el-menu-item index="6-1">客户查询</el-menu-item>
+          <el-menu-item index="6-2">车辆查询</el-menu-item>
+        </el-submenu>
+        <el-submenu index="7">
+          <template slot="title">
+            <icon-svg size="20" icon-class="hujiaozhuanyitianchong"></icon-svg>
+            <span slot="title">呼叫中心</span>
+          </template>
+          <el-menu-item index="7-1">电话值守</el-menu-item>
+        </el-submenu>
+        <el-submenu index="8">
+          <template slot="title">
+            <icon-svg size="20" icon-class="msnui-org-inverse"></icon-svg>
+            <span slot="title">机构管理</span>
+          </template>
+          <el-menu-item index="8-1">优惠券定义</el-menu-item>
+          <el-menu-item index="8-2">优惠券消费</el-menu-item>
+          <el-menu-item index="8-3">平台充值</el-menu-item>
+          <el-menu-item index="8-4">机构管理</el-menu-item>
+        </el-submenu>
+      </el-menu>
+    </div>
+    <!-- 内容 -->
+    <div id="main" v-loading="mainLoading" :class="{'collapse-menu': collapseMenu}">
+      <iframe :src="framePath" ref="iframe" frameborder="0"></iframe>
+    </div>
+  </div>
+  
+  <script type="text/javascript">
+    require([
+      'vue',
+      'ELEMENT',
+      'util/index',
+      'components/icon-svg',
+      'components/screenfull'], function (Vue, ELEMENT, u, IconSvg, Screenfull) {
+      if (top != self) {
+        top.location.href = self.location.href
+      }
+      Vue.use(ELEMENT);
+      Vue.component('icon-svg', IconSvg);
+      Vue.component('screenfull', Screenfull)
+      new Vue({
+        el: '#app-index',
+        data: function () {
+          return {
+            mainLoading: true,
+            collapseMenu: false,
+            framePath: '/html/order/proxy.html'
+          }
+        },
+        created: function () {
+          var path = decodeURIComponent(location.hash.substring(1));
+          this.framePath = path || ''
+          // utils的一些初始化动作
+          u.init(this);
+          // 监听iframe窗口的消息
+          u.onPostMessageOfNotice({
+            'element-message': true,
+            'element-notification': true,
+            'element-MessageBox-alert': true,
+            'element-MessageBox-confirm': true,
+            'element-MessageBox-prompt': true
+          })
+        },
+        mounted () {
+          this.$nextTick(function () {
+            var _this = this;
+            this.$refs.iframe.addEventListener('load', function () {
+              _this.mainLoading = false;
+            })
+            window.addEventListener('resize', function () {
+              var w = (document.documentElement && document.documentElement.clientWidth) || document.body.clientWidth;
+              if (w < 1136) {
+                _this.collapseMenu = true;
+              }
+            });
+            // this.$layer.vnode('aaa')
+            // this.$layer.url({})
+          })
+        },
+        methods: {
+          go: function (path) {
+            if (path === this.framePath) return false;
+            this.mainLoading = true;
+            this.framePath = path;
+            location.hash = encodeURIComponent(path);
+          }
+        }
+      })
+    });
+  </script>
+</body>
+</html>

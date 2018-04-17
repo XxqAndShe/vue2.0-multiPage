@@ -1,0 +1,73 @@
+// 表格测试数据
+export function setData () {
+  return [{
+    shopName: '宝祥3s店',
+    sid: '123456',
+    code: 'chh001',
+    certNo: 'pz001',
+    countAmount: '2000',
+    completeSettlement: '1000',
+    unSettlement: '2000',
+    cleanStatus: '未结',
+    biz: {
+      name: '换发动机'
+    },
+    orderTime: '2018-03-24 00:00:01'
+  },
+  {
+    shopName: '宝祥3s店',
+    sid: '123456',
+    code: 'chh002',
+    certNo: 'pz001',
+    countAmount: '2000',
+    completeSettlement: '1000',
+    unSettlement: '2000',
+    cleanStatus: '已结',
+    biz: {
+      name: '换发动机'
+    },
+    orderTime: '2018-03-24 00:00:02'
+  },
+  {
+    shopName: '宝祥3s店',
+    sid: '123456',
+    code: 'chh003',
+    certNo: 'pz001',
+    countAmount: '2000',
+    completeSettlement: '1000',
+    unSettlement: '2000',
+    cleanStatus: '已结',
+    biz: {
+      name: '换发动机'
+    },
+    orderTime: '2018-03-24 00:00:03'
+  },
+  {
+    shopName: '宝祥3s店',
+    sid: '123456',
+    code: 'chh004',
+    certNo: 'pz001',
+    countAmount: '2000',
+    completeSettlement: '1000',
+    unSettlement: '2000',
+    cleanStatus: '已结',
+    biz: {
+      name: '换发动机'
+    },
+    orderTime: '2018-03-24 00:00:04'
+  },
+  {
+    shopName: '宝祥3s店',
+    sid: '123456',
+    code: 'chh005',
+    certNo: 'pz001',
+    countAmount: '2000',
+    completeSettlement: '1000',
+    unSettlement: '2000',
+    cleanStatus: '已结',
+    biz: {
+      name: '换发动机'
+    },
+    orderTime: '2018-03-24 00:00:05'
+  }]
+}

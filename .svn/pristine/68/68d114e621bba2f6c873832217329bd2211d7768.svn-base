@@ -1,0 +1,44 @@
+import axios from 'axios'
+import ElementUI from 'element-ui'
+
+const baseURL = process.env.BASE_URL
+// 创建axios实例
+const service = axios.create({
+  baseURL,
+  timeout: 6000000
+})
+
+// request拦截器
+service.interceptors.request.use(
+  config => {
+    // 处理一些全局配置
+    config.headers['CHH-Client-Type'] = 'LocalExplore'
+    const token = localStorage.getItem('token')
+    const metaSeed = localStorage.getItem('metaSeed')
+    if (token) {
+      config.headers['CHH-Authority-Token'] = token
+    }
+    if (metaSeed) {
+      config.headers['CHH-Session-Seed'] = metaSeed
+    }
+    return config
+  },
+  error => {
+    ElementUI.Message.error('请检查您的网络')
+    return Promise.reject(error)
+  }
+)
+
+// response拦截器
+service.interceptors.response.use(
+  response => {
+    // 处理一些全局响应
+    return response
+  },
+  error => {
+    ElementUI.Message.error('请检查您的网络')
+    return Promise.reject(error)
+  }
+)
+
+export default service

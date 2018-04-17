@@ -1,0 +1,14 @@
+@import '../variable.less';
+.detail-info {
+  width: 100%;
+  text-align: center;
+  p {
+    height: 20px;
+    line-height: 20px;
+    u{
+      cursor: pointer;
+      color: #3a8ee6;
+
+    }
+  }
+}

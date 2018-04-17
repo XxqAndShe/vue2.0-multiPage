@@ -1,0 +1,27 @@
+(function () {
+  function getScriptPath(key) {
+    var scripts = document.getElementsByTagName("script"),
+    script = scripts[scripts.length - 1];
+    return script.getAttribute(key) || ''
+  }
+  require.config({
+    baseUrl: getScriptPath('data-path') + 'static',
+    paths: {
+      'css': 'js/lib/css.min',
+      'text': 'js/lib/text.min',
+      'jquery': 'js/lib/jquery.min',
+      'vue': ['js/lib/vue.min', '//cdn.bootcss.com/vue/2.5.13/vue.min.js'],
+      'ELEMENT': ['js/lib/element-ui/index.min', '//cdn.bootcss.com/element-ui/2.2.0/index.js'],
+      'screenfull': 'js/lib/screenfull.min'
+    },
+    shim: {
+      'ELEMENT': {
+        deps: ['vue', 'css!js/lib/element-ui/index.min.css']
+      },
+      'screenfull': {
+        exports: 'screenfull'
+      }
+    },
+    waitSeconds: 0
+  })
+})();

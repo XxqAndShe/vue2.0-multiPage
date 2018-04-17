@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>订单查询</title>
+  <link rel="stylesheet" href="/static/css/normalize.min.css">
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_580199_qdrw4brplclyp66r.css">
+  <link rel="stylesheet" href="/static/css/all.css">
+  <script src="/static/js/lib/es6-promise.auto.min.js"></script>
+  <script src="/static/js/lib/require.min.js"></script>
+  <script data-path="../../" src="/static/config.js"></script>
+</head>
+<body>
+  <div id="app" v-clock>
+      <layout-table>
+          <div slot="header-left-handler">
+            <el-button :loading="orderAccepting" :disabled="loading" @click="doBatchOrderAccept" type="primary" icon="el-icon-tickets" size='small'>批量接单</el-button>
+            <el-button :loading="orderCompleteding" :disabled="loading" @click="doBatchOrderCompleted" type="success" icon="el-icon-check" size='small'>批量完成</el-button>
+            <el-button :loading="orderDenieding" :disabled="loading" @click="doBatchOrderDenied" type="danger" icon="el-icon-close" size='small'>批量拒单</el-button>
+          </div>
+          <div slot="header-right-filters">
+            <el-date-picker
+              style="width: 220px;margin-bottom: 10px;"
+              v-model="filterTime"
+              type="daterange"
+              align="left"
+              :editable="false"
+              size='small'
+              @change="timeChange"
+              placeholder="选择日期范围"
+              :picker-options="pickerOptions">
+            </el-date-picker>
+            <el-select style="width: 220px;margin-bottom: 10px;" placeholder="选择订单状态" size='small'>
+              <el-option label="待接单" value="待接单"></el-option>
+              <el-option label="待完成" value="待完成"></el-option>
+            </el-select>
+            <el-input style="width: 220px;" placeholder="操作人" size='small'></el-input>
+          </div>
+          <div slot="header-right-handler">
+            <el-button type="primary" icon="el-icon-search" size='small'>查询</el-button>
+          </div>
+        </layout-table>
+  </div>
+  <script>
+    require(['vue', 'ELEMENT', 'util/index', 'components/layout-table'], function (Vue, ELEMENT, u, LayoutTable) {
+      Vue.use(ELEMENT)
+      new Vue({
+        el:'#app',
+        components: {
+          LayoutTable: LayoutTable
+        },
+        data:function(){
+          return{
+            filterTime: '',
+            orderAccepting:false,
+            loading:false,
+            orderCompleteding: false, // 完成订单请求中
+            orderDenieding: false, // 拒绝接单请求中
+            pickerOptions: {
+              shortcuts: [{
+                text: '最近一周',
+                onClick (picker) {
+                  const end = new Date()
+                  const start = new Date()
+                  start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+                  picker.$emit('pick', [start, end])
+                }
+              }, {
+                text: '最近一个月',
+                onClick (picker) {
+                  const end = new Date()
+                  const start = new Date()
+                  start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+                  picker.$emit('pick', [start, end])
+                }
+              }, {
+                text: '最近三个月',
+                onClick (picker) {
+                  const end = new Date()
+                  const start = new Date()
+                  start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+                  picker.$emit('pick', [start, end])
+                }
+              }]
+            }
+          }
+        },
+        methods: {
+          timeChange (vl) {
+            console.log(vl)
+          },
+          doBatchOrderAccept:function(){
+
+          },
+          orderCompleteding:function(){
+
+          },
+          doBatchOrderCompleted: function () {
+
+          },
+          doBatchOrderDenied: function () {
+          }
+        }
+      })
+    })
+  </script>
+</body>
+</html>

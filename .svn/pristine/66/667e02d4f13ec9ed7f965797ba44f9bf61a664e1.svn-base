@@ -1,0 +1,7 @@
+'use strict'
+module.exports = {
+  NODE_ENV: '"production"',
+  // BASE_URL: '"https://coustomer.chehaha.net"'
+  BASE_URL: '""',
+  SOCK_URL: '"https://192.168.10.207:15674/stomp"'
+}

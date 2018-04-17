@@ -1,0 +1,19 @@
+@min-width: 1136px;
+// 字体颜色
+@font-color: #606266;
+// 边框颜色
+@border-color: #d8dce5;
+// 顶部导航栏
+@header-height: 64px;
+@header-color-from: #1c2f41;
+@header-color-to: #93afca;
+// 左侧导航栏
+@aside-width: 200px;
+@aside-collapse-width: 64px;
+@aside-color: #1c2f41;
+// 标签栏
+// @tags-bar-height: 34px;
+// @tags-bar-color: #F2F6FC;
+
+// -------------表格布局页面---------------
+@table-header-bg: #F2F6FC;

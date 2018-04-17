@@ -1,0 +1,226 @@
+<template>
+  <div id="login">
+    <div class="login-box">
+      <h1>XXX系统</h1>
+      <span class="title">欢迎登陆</span>
+      <span class="info" v-if="errorFlag">{{errorInfo}}</span>
+      <span class="login-accound">
+        <label>
+          <icon-svg icon-class="yonghuming" size="24" fill="#8a8a8a"></icon-svg>
+        </label>
+        <input type="text" placeholder="请输入用户名" maxlength="11" v-model="loginUser.username" id="mobile" @input="inputFocus(mobile.value)">
+      </span>
+      <span class="login-accound">
+        <label>
+          <icon-svg icon-class="mimaffffffpx" size="24" fill="#8a8a8a"></icon-svg>
+        </label>
+        <input type="password" placeholder="请输入密码" v-model="loginUser.password">
+      </span>
+      <span class="fixd-password">
+        <span>
+          <label>
+            <input type="checkbox"> 14天免登陆
+          </label>
+        </span>
+      </span>
+      <span class="confirm-login">
+        <el-button :loading="loading" :disabled="loading" @click="doLogin" icon="el-icon-check">确认登陆</el-button>
+      </span>
+    </div>
+  </div>
+</template>
+
+<script>
+import { setLogin, refresh } from '../../api/order'
+import notice from '../../utils/notice'
+
+export default {
+  data () {
+    return {
+      loginUser: {
+        username: '13309872617', // 登陆账号
+        password: '123456' // 登陆密码
+      },
+      errorInfo: '请输入用户名',
+      errorFlag: false,
+      loading: false
+    }
+  },
+  created () {
+    notice.init()
+    // 刷新token自动登录
+    this.checkUserLogin()
+  },
+  methods: {
+    inputFocus: function (event) {
+      event = event.replace(/\D/g, '')
+      this.loginUser.username = event
+    },
+    // 登录验证
+    valid: function () {
+      var phoneReg = /^1[3456789]\d{9}$/
+      if (!this.loginUser.username) {
+        this.errorFlag = true
+        this.errorInfo = '用户名不能为空'
+        return false
+      } else if (!phoneReg.test(this.loginUser.username)) {
+        this.errorFlag = true
+        this.errorInfo = '请输入正确的手机号码'
+        return
+      } else if (!this.loginUser.password) {
+        this.errorFlag = true
+        this.errorInfo = '密码不能为空'
+        return false
+      }
+      return true
+    },
+    // 登陆
+    doLogin: function () {
+      // 移除meatSeed和token
+      localStorage.removeItem('token')
+      localStorage.removeItem('metaSeed')
+      this.loading = true // 禁止连续点击
+      if (!this.valid()) {
+        return
+      }
+      setLogin(this.loginUser).then(data => {
+        if (data.success) {
+          this.$message.success('登陆成功！')
+          localStorage.setItem('token', data.data.token)
+          localStorage.setItem('metaSeed', data.data.metaSeed)
+          setTimeout(() => {
+            window.location.href = window.origin + '/index.html'
+          }, 300)
+        } else {
+          this.$message.error(data.message)
+          this.loading = false
+        }
+      })
+    },
+    // 刷新token
+    checkUserLogin () {
+      let token = localStorage.getItem('token')
+      if (!token) { // 首次登陆无token
+        return
+      }
+      refresh().then(data => {
+        if (data.success) { // 通过
+          if (data.data === token) { // 如果token没有过期，自动登录
+            setTimeout(() => {
+              window.location.href = window.origin + '/index.html'
+            }, 300)
+          }
+          localStorage.setItem('token', data.data)
+        } else { // 不通过
+          this.$message.error('服务器异常，请联系管理员')
+        }
+      })
+    }
+  }
+}
+</script>
+
+<style lang="less">
+html {
+  width: 100%;
+  height: 100%;
+}
+body {
+  width: 100%;
+  height: 100%;
+}
+#login {
+  width: 100%;
+  height: 100%;
+  background: url(../../assets/img/Sign_bj.jpg) no-repeat center;
+  position: relative;
+  top: 0;
+  left: 0;
+  .login-box {
+    h1 {
+      position: absolute;
+      top: -85px;
+      left: 100px;
+      text-shadow: 3px 1px 5px #666;
+    }
+    width: 360px;
+    height: 375px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px #ccc;
+    background: #fff;
+    padding: 30px 0 0 30px;
+    box-sizing: border-box;
+    .title {
+      font-size: 20px;
+      color: #444;
+    }
+    .info {
+      font-size: 12px;
+      color: red;
+    }
+    .login-accound {
+      float: left;
+      width: 300px;
+      height: 40px;
+      border: 1px solid #ccc;
+      margin-top: 24px;
+      position: relative;
+      i {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      label {
+        float: left;
+        width: 40px;
+        height: 40px;
+        line-height: 50px;
+        text-align: center;
+      }
+      input {
+        font-size: 14px;
+        float: left;
+        width: 255px;
+        height: 40px;
+        line-height: 40px;
+        padding: 2px 26px 2px 2px;
+        box-sizing: border-box;
+        border: none;
+        outline: none;
+      }
+    }
+    .fixd-password {
+      margin: 15px 0;
+      height: auto;
+      float: left;
+      width: 300px;
+      height: 40px;
+      margin-top: 24px;
+      position: relative;
+      label {
+        font-size: 12px;
+        color: #000;
+      }
+    }
+    .confirm-login {
+      float: left;
+      width: 300px;
+      height: 40px;
+      margin-top: 24px;
+      position: relative;
+      border: none;
+      margin-top: 0;
+      button {
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        background: #0d85e4;
+        font-size: 18px;
+      }
+    }
+  }
+}
+</style>
